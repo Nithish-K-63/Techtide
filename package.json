@@ -1,0 +1,22 @@
+{
+  "name": "career-guidance-portal",
+  "version": "1.0.0",
+  "description": "Skill-Based Job Matching Career Guidance Portal",
+  "scripts": {
+    "dev": "python app.py",
+    "start": "python app.py",
+    "install:all": "npm install --prefix client && npm install --prefix server"
+  },
+  "keywords": [
+    "career",
+    "job-matching",
+    "skills",
+    "react",
+    "nodejs"
+  ],
+  "author": "Career Portal",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}
