@@ -824,6 +824,61 @@ SKILL_ALIASES = {
     "postman": ["postman", "insomnia", "api testing"]
 }
 
+# ─── PDF text extraction via pdfminer (pure Python, no binary deps) ──────────
+def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
+    """Extract all text from a PDF using pdfminer.six (pure Python)."""
+    import io
+    try:
+        from pdfminer.high_level import extract_text_to_fp
+        from pdfminer.layout import LAParams
+        input_buf = io.BytesIO(pdf_bytes)
+        output_buf = io.StringIO()
+        extract_text_to_fp(input_buf, output_buf, laparams=LAParams(), output_type='text', codec=None)
+        return output_buf.getvalue()
+    except Exception as e:
+        print(f"[PDF] pdfminer extraction error: {e}")
+        return ""
+
+
+# ─── Image OCR via pytesseract (optional, degrades gracefully) ────────────────
+def extract_text_from_image_bytes(image_bytes: bytes) -> str:
+    """OCR an image using pytesseract if available, else return empty string."""
+    import io
+    try:
+        import pytesseract
+        from PIL import Image
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        return pytesseract.image_to_string(image)
+    except ImportError:
+        print("[OCR] pytesseract not installed — image OCR skipped.")
+        return ""
+    except Exception as e:
+        print(f"[OCR] Image extraction error: {e}")
+        return ""
+
+
+def extract_skills_from_text(raw_text: str) -> List[dict]:
+    """Match raw OCR / text against SKILL_ALIASES and return skill objects."""
+    import re
+    full_text = raw_text.lower()
+    full_text = re.sub(r'[,;|•\-_/\\]+', ' ', full_text)
+    full_text = re.sub(r'\s+', ' ', full_text).strip()
+
+    extracted_user_skills = []
+    extracted_ids = set()
+
+    for skill_id, aliases in SKILL_ALIASES.items():
+        for alias in aliases:
+            pattern = r'(?<![a-z0-9])' + re.escape(alias) + r'(?![a-z0-9])'
+            if re.search(pattern, full_text):
+                if skill_id not in extracted_ids:
+                    extracted_ids.add(skill_id)
+                    extracted_user_skills.append({"id": skill_id, "level": 4})
+                break
+
+    return extracted_user_skills
+
+
 def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
     import json, re
 
@@ -844,43 +899,51 @@ def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
                 extract_strings(item)
 
     extract_strings(data)
-    full_text = " ".join(text_content).lower()
-    full_text = re.sub(r'[,;|•\-_/\\]+', ' ', full_text)
-    full_text = re.sub(r'\s+', ' ', full_text).strip()
+    raw_text = " ".join(text_content)
+    return extract_skills_from_text(raw_text)
 
-    extracted_user_skills = []
-    extracted_ids = set()
+# Supported file extensions for the resume upload endpoint
+_OCR_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff", ".tif"}
+_ALLOWED_EXTS   = {".pdf", ".json"} | _OCR_IMAGE_EXTS
 
-    for skill_id, aliases in SKILL_ALIASES.items():
-        for alias in aliases:
-            pattern = r'(?<![a-z0-9])' + re.escape(alias) + r'(?![a-z0-9])'
-            if re.search(pattern, full_text):
-                if skill_id not in extracted_ids:
-                    extracted_ids.add(skill_id)
-                    extracted_user_skills.append({"id": skill_id, "level": 4})
-                break
-
-    return extracted_user_skills
 
 @app.post("/api/profile/resume")
 async def upload_resume(resume: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     ext = Path(resume.filename).suffix.lower()
-    if ext not in (".pdf", ".doc", ".docx", ".json"):
-        raise HTTPException(status_code=400, detail="Only PDF, Word, and JSON documents are allowed")
-    
+    if ext not in _ALLOWED_EXTS:
+        raise HTTPException(
+            status_code=400,
+            detail="Supported formats: PDF, PNG, JPG, JPEG, WEBP, BMP, TIFF, JSON"
+        )
+
     filename = f"resume_{int(datetime.now(timezone.utc).timestamp() * 1000)}{ext}"
     filepath = UPLOADS_DIR / filename
     content = await resume.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
-    
+    if len(content) > 10 * 1024 * 1024:  # 10 MB limit for image resumes
+        raise HTTPException(status_code=400, detail="File too large (max 10 MB)")
+
     with open(filepath, "wb") as f:
         f.write(content)
 
+    # ── Skill extraction based on file type ──────────────────────────────────
     extracted_skills = []
+    extraction_method = "none"
+
     if ext == ".json":
         extracted_skills = extract_skills_from_json(content)
+        extraction_method = "json-parse"
+    elif ext == ".pdf":
+        raw_text = extract_text_from_pdf_bytes(content)
+        if raw_text.strip():
+            extracted_skills = extract_skills_from_text(raw_text)
+            extraction_method = "pdf-ocr"
+    elif ext in _OCR_IMAGE_EXTS:
+        raw_text = extract_text_from_image_bytes(content)
+        if raw_text.strip():
+            extracted_skills = extract_skills_from_text(raw_text)
+            extraction_method = "image-ocr"
 
+    # ── Merge extracted skills into user profile ──────────────────────────────
     d = get_db()
     resume_data = {
         "profile.resumeFileName": filename,
@@ -897,8 +960,8 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
                 merged_skills.append(es)
         resume_data["profile.skills"] = merged_skills
         current_user.setdefault("profile", {})["skills"] = merged_skills
-        
-        # update memory fallback store
+
+        # Sync into the in-memory fallback store as well
         idx = next((i for i, u in enumerate(MEM_USERS) if u["id"] == current_user["id"]), None)
         if idx is not None:
             MEM_USERS[idx].setdefault("profile", {})["skills"] = merged_skills
@@ -908,12 +971,14 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
             await d.users.update_one({"id": current_user["id"]}, {"$set": resume_data})
         except Exception:
             pass
-    
+
     return {
-        "message": "Resume uploaded successfully",
+        "message": "Resume uploaded and skills extracted successfully" if extracted_skills else "Resume uploaded successfully",
         "filename": filename,
         "originalName": resume.filename,
-        "extractedSkills": extracted_skills
+        "extractedSkills": extracted_skills,
+        "extractionMethod": extraction_method,
+        "skillsFound": len(extracted_skills)
     }
 
 @app.put("/api/profile/info")
