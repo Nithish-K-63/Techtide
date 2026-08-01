@@ -824,20 +824,392 @@ SKILL_ALIASES = {
     "postman": ["postman", "insomnia", "api testing"]
 }
 
-# ─── PDF text extraction via pdfminer (pure Python, no binary deps) ──────────
+# ═══════════════════════════════════════════════════════════════════════════════
+#  RESUME PARSER  —  Layout-aware · Field-aware · Column-detecting · Topic-wise
+# ═══════════════════════════════════════════════════════════════════════════════
+import io, re, dataclasses
+from dataclasses import dataclass, field as dc_field
+from typing import Tuple
+
+
+# ─── Data Models ──────────────────────────────────────────────────────────────
+@dataclass
+class TextBlock:
+    text: str
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    fontsize: float
+    fontname: str
+    page: int
+
+@dataclass
+class ResumeData:
+    columns_detected: int = 1
+    name: str = ""
+    email: str = ""
+    phone: str = ""
+    linkedin: str = ""
+    github: str = ""
+    summary: str = ""
+    skills: list = dc_field(default_factory=list)
+    experience: list = dc_field(default_factory=list)
+    education: list = dc_field(default_factory=list)
+    projects: list = dc_field(default_factory=list)
+    certifications: list = dc_field(default_factory=list)
+    raw_text: str = ""
+
+
+# ─── Regex Patterns ───────────────────────────────────────────────────────────
+_EMAIL_RE    = re.compile(r'[\w.+\-]+@[\w\-]+\.[a-zA-Z]{2,}')
+_PHONE_RE    = re.compile(r'(?<!\d)(\+?[\d][\d\s\-().]{7,14}\d)(?!\d)')
+_LINKEDIN_RE = re.compile(r'(?:linkedin\.com/in/|linkedin:\s*)([\w\-]+)', re.I)
+_GITHUB_RE   = re.compile(r'(?:github\.com/|github:\s*)([\w\-]+)', re.I)
+_DATE_RE     = re.compile(
+    r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,.]*\d{4}'
+    r'|(\d{4})\s*[-–—]\s*(\d{4}|present|current|now)',
+    re.I
+)
+
+_SECTION_KEYWORDS = {
+    "summary":        ["summary", "profile", "objective", "about me", "career objective",
+                       "professional summary", "overview"],
+    "skills":         ["skills", "technical skills", "core competencies", "technologies",
+                       "tools", "frameworks", "programming skills", "key skills",
+                       "technology stack"],
+    "experience":     ["experience", "work experience", "employment", "professional experience",
+                       "career history", "work history", "internship", "internships"],
+    "education":      ["education", "academic background", "qualifications", "academics",
+                       "educational qualification"],
+    "projects":       ["projects", "personal projects", "key projects", "academic projects",
+                       "notable projects"],
+    "certifications": ["certifications", "certificates", "achievements", "awards",
+                       "accomplishments", "licenses"],
+}
+
+
+class ResumeParser:
+    """
+    Stage 1 → Extract LTTextBox objects with bounding boxes from pdfminer
+    Stage 2 → Detect number of columns via X-coordinate gap analysis
+    Stage 3 → Sort blocks in correct reading order (column → top-to-bottom)
+    Stage 4 → Identify section headers via font size + keyword + ALL_CAPS
+    Stage 5 → Field-aware parsers per section
+    Stage 6 → Return structured ResumeData
+    """
+
+    # ── Stage 1: Low-level text block extraction ───────────────────────────────
+    def _extract_blocks(self, pdf_bytes: bytes) -> Tuple[list, float, float]:
+        """Returns (blocks, page_width, avg_fontsize)"""
+        from pdfminer.pdfpage import PDFPage
+        from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+        from pdfminer.converter import PDFPageAggregator
+        from pdfminer.layout import LAParams, LTPage, LTTextBox, LTTextLine, LTChar, LTAnon
+
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams(line_margin=0.3, char_margin=2.0, boxes_flow=None)
+        device   = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        interp   = PDFPageInterpreter(rsrcmgr, device)
+
+        blocks: list[TextBlock] = []
+        page_width = 612.0  # default A4/letter
+        fontsizes  = []
+
+        for page_num, page in enumerate(PDFPage.get_pages(io.BytesIO(pdf_bytes), check_extractable=True)):
+            interp.process_page(page)
+            layout = device.get_result()
+            if hasattr(layout, 'width'):
+                page_width = layout.width
+
+            for element in layout:
+                if not isinstance(element, LTTextBox):
+                    continue
+                text = element.get_text().strip()
+                if not text:
+                    continue
+
+                # Find dominant font size in this box
+                sizes = []
+                bold  = False
+                fname = ""
+                for line in element:
+                    if not isinstance(line, LTTextLine):
+                        continue
+                    for char in line:
+                        if isinstance(char, LTChar):
+                            sizes.append(char.size)
+                            fn = char.fontname.lower()
+                            if any(w in fn for w in ["bold", "heavy", "black", "demi"]):
+                                bold = True
+                            if not fname:
+                                fname = char.fontname
+
+                fontsize = sum(sizes) / len(sizes) if sizes else 10.0
+                fontsizes.append(fontsize)
+
+                blocks.append(TextBlock(
+                    text=text,
+                    x0=element.x0, y0=element.y0,
+                    x1=element.x1, y1=element.y1,
+                    fontsize=round(fontsize, 2),
+                    fontname=("Bold:" + fname) if bold else fname,
+                    page=page_num,
+                ))
+
+        avg_fs = sum(fontsizes) / len(fontsizes) if fontsizes else 10.0
+        return blocks, page_width, avg_fs
+
+    # ── Stage 2: Column detection via X-coordinate gap analysis ───────────────
+    def _detect_columns(self, blocks: list, page_width: float) -> Tuple[int, float]:
+        """
+        Returns (num_columns, divider_x).
+        Finds the largest horizontal gap between clusters of text block x0 values.
+        If gap > 25% of page width → two-column layout.
+        """
+        if not blocks:
+            return 1, page_width / 2
+
+        x0_vals = sorted(set(round(b.x0 / 5) * 5 for b in blocks))  # bucket to 5pt
+        if len(x0_vals) < 2:
+            return 1, page_width / 2
+
+        max_gap   = 0.0
+        divider_x = page_width / 2
+
+        for i in range(len(x0_vals) - 1):
+            gap = x0_vals[i + 1] - x0_vals[i]
+            if gap > max_gap:
+                max_gap   = gap
+                divider_x = (x0_vals[i] + x0_vals[i + 1]) / 2
+
+        if max_gap > page_width * 0.25:
+            print(f"[Parser] 2-column layout detected (gap={max_gap:.1f}pt at x={divider_x:.1f})")
+            return 2, divider_x
+        return 1, page_width / 2
+
+    # ── Stage 3: Reading-order sort ────────────────────────────────────────────
+    def _sort_reading_order(self, blocks: list, num_cols: int, divider_x: float) -> list:
+        """
+        1-col: sort by page↑ → y1↓ (top to bottom)
+        2-col: sort by page↑ → column (left=0, right=1) → y1↓
+        """
+        def key(b: TextBlock):
+            col = 0 if b.x0 < divider_x else 1
+            return (b.page, col if num_cols == 2 else 0, -b.y1)
+        return sorted(blocks, key=key)
+
+    # ── Stage 4: Section header detection ─────────────────────────────────────
+    def _is_header(self, block: TextBlock, avg_fs: float) -> str | None:
+        """
+        Returns section key if block is a section header, else None.
+        Header criteria: larger font OR bold font OR ALL_CAPS + keyword match.
+        """
+        txt   = block.text.strip().lower().rstrip(":").strip()
+        txt_u = block.text.strip().upper()
+        is_large = block.fontsize >= avg_fs + 1.5
+        is_bold  = "Bold:" in block.fontname
+        is_caps  = block.text.strip() == txt_u and len(block.text.strip()) < 50
+
+        for section, keywords in _SECTION_KEYWORDS.items():
+            for kw in keywords:
+                if txt == kw or txt.startswith(kw):
+                    return section
+
+        # Looser check for visual headers (large/bold + first word matches)
+        if is_large or is_bold or is_caps:
+            first_word = txt.split()[0] if txt.split() else ""
+            for section, keywords in _SECTION_KEYWORDS.items():
+                for kw in keywords:
+                    if first_word == kw.split()[0]:
+                        return section
+        return None
+
+    # ── Stage 5a: Contact info extraction ─────────────────────────────────────
+    def _parse_contact(self, lines: list[str]) -> dict:
+        info = {"name": "", "email": "", "phone": "", "linkedin": "", "github": ""}
+        full = "\n".join(lines)
+
+        m = _EMAIL_RE.search(full)
+        if m: info["email"] = m.group()
+
+        m = _PHONE_RE.search(full)
+        if m: info["phone"] = m.group(1).strip()
+
+        m = _LINKEDIN_RE.search(full)
+        if m: info["linkedin"] = "linkedin.com/in/" + m.group(1)
+
+        m = _GITHUB_RE.search(full)
+        if m: info["github"] = "github.com/" + m.group(1)
+
+        # First non-contact line with no special chars → likely the name
+        for line in lines:
+            ln = line.strip()
+            if not ln: continue
+            if _EMAIL_RE.search(ln) or _PHONE_RE.search(ln): continue
+            if any(kw in ln.lower() for kw in ["linkedin", "github", "http", "www", "@"]): continue
+            if len(ln.split()) >= 2 and len(ln) < 60:
+                info["name"] = ln
+                break
+        return info
+
+    # ── Stage 5b: Skills extraction ───────────────────────────────────────────
+    def _parse_skills(self, lines: list[str]) -> list:
+        skills = []
+        for line in lines:
+            # Split by bullets, commas, pipes, semicolons
+            parts = re.split(r'[•·▪\-,|;/]+', line)
+            for p in parts:
+                s = p.strip()
+                if s and len(s) > 1 and len(s) < 60:
+                    skills.append(s)
+        return [s for s in skills if s]
+
+    # ── Stage 5c: Experience extraction ───────────────────────────────────────
+    def _parse_experience(self, lines: list[str]) -> list:
+        jobs, current = [], {}
+        for line in lines:
+            ln = line.strip()
+            if not ln: continue
+            date_match = _DATE_RE.search(ln)
+            if date_match:
+                if current and "title" in current:
+                    jobs.append(current)
+                current = {"title": "", "company": "", "duration": ln, "points": []}
+            elif current and re.match(r'^[•·▪\-*]', ln):
+                current.setdefault("points", []).append(ln.lstrip("•·▪-* ").strip())
+            elif current and not current.get("title"):
+                current["title"] = ln
+            elif current and not current.get("company"):
+                current["company"] = ln
+            elif not current:
+                current = {"title": ln, "company": "", "duration": "", "points": []}
+        if current and ("title" in current or "company" in current):
+            jobs.append(current)
+        return jobs
+
+    # ── Stage 5d: Education extraction ────────────────────────────────────────
+    def _parse_education(self, lines: list[str]) -> list:
+        entries, current = [], {}
+        degree_kw = ["bachelor", "master", "b.tech", "m.tech", "be", "me", "bsc", "msc",
+                     "phd", "diploma", "b.e", "m.e", "mba", "bca", "mca", "b.com"]
+        for line in lines:
+            ln = line.strip()
+            if not ln: continue
+            lower = ln.lower()
+            if any(kw in lower for kw in degree_kw):
+                if current: entries.append(current)
+                current = {"degree": ln, "institution": "", "year": "", "gpa": ""}
+            elif re.search(r'\b(20\d{2}|19\d{2})\b', ln):
+                yr = re.search(r'\b(20\d{2}|19\d{2})\b', ln)
+                if current: current["year"] = yr.group()
+                gpa = re.search(r'(?:gpa|cgpa|percentage)[:\s]*([\d.]+)', ln, re.I)
+                if gpa and current: current["gpa"] = gpa.group(1)
+            elif current and not current["institution"]:
+                current["institution"] = ln
+        if current and current.get("degree"):
+            entries.append(current)
+        return entries
+
+    # ── Stage 5e: Projects extraction ─────────────────────────────────────────
+    def _parse_projects(self, lines: list[str]) -> list:
+        projects, current = [], {}
+        for line in lines:
+            ln = line.strip()
+            if not ln: continue
+            if re.match(r'^[•·▪\-*]', ln):
+                if current and "name" in current:
+                    current.setdefault("description", "")
+                    current["description"] += " " + ln.lstrip("•·▪-* ").strip()
+                else:
+                    if current: projects.append(current)
+                    current = {"name": ln.lstrip("•·▪-* ").strip(), "description": ""}
+            elif not current.get("name"):
+                if current: projects.append(current)
+                current = {"name": ln, "description": ""}
+            else:
+                current["description"] = (current.get("description", "") + " " + ln).strip()
+        if current and current.get("name"):
+            projects.append(current)
+        return projects
+
+    # ── Stage 5f: Certifications extraction ───────────────────────────────────
+    def _parse_certifications(self, lines: list[str]) -> list:
+        certs = []
+        for line in lines:
+            parts = re.split(r'[•·▪\n]+', line)
+            for p in parts:
+                s = p.strip().lstrip("-* ")
+                if s and len(s) > 3:
+                    certs.append(s)
+        return certs
+
+    # ── Main parse entry point ─────────────────────────────────────────────────
+    def parse(self, pdf_bytes: bytes) -> dict:
+        """Parse a PDF and return a structured resume dict."""
+        try:
+            blocks, page_width, avg_fs = self._extract_blocks(pdf_bytes)
+        except Exception as e:
+            print(f"[Parser] Block extraction failed: {e}")
+            return dataclasses.asdict(ResumeData())
+
+        if not blocks:
+            return dataclasses.asdict(ResumeData())
+
+        num_cols, divider_x = self._detect_columns(blocks, page_width)
+        ordered_blocks       = self._sort_reading_order(blocks, num_cols, divider_x)
+
+        raw_text = "\n".join(b.text for b in ordered_blocks)
+
+        # ── Section segmentation ──────────────────────────────────────────────
+        sections: dict[str, list[str]] = {"contact": []}
+        current_section = "contact"
+
+        for block in ordered_blocks:
+            header = self._is_header(block, avg_fs)
+            if header:
+                current_section = header
+                sections.setdefault(current_section, [])
+            else:
+                sections.setdefault(current_section, []).append(block.text)
+
+        print(f"[Parser] Detected sections: {list(sections.keys())}")
+
+        # ── Field-aware parsing ───────────────────────────────────────────────
+        rd = ResumeData(columns_detected=num_cols, raw_text=raw_text)
+
+        contact = self._parse_contact(sections.get("contact", []))
+        rd.name     = contact["name"]
+        rd.email    = contact["email"]
+        rd.phone    = contact["phone"]
+        rd.linkedin = contact["linkedin"]
+        rd.github   = contact["github"]
+
+        rd.summary        = " ".join(sections.get("summary", [])).strip()
+        rd.skills         = self._parse_skills(sections.get("skills", []))
+        rd.experience     = self._parse_experience(sections.get("experience", []))
+        rd.education      = self._parse_education(sections.get("education", []))
+        rd.projects       = self._parse_projects(sections.get("projects", []))
+        rd.certifications = self._parse_certifications(sections.get("certifications", []))
+
+        return dataclasses.asdict(rd)
+
+
+# ─── Global parser instance (reused across requests) ─────────────────────────
+_resume_parser = ResumeParser()
+
+
 def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
-    """Extract all text from a PDF using pdfminer.six (pure Python)."""
-    import io
-    try:
-        from pdfminer.high_level import extract_text_to_fp
-        from pdfminer.layout import LAParams
-        input_buf = io.BytesIO(pdf_bytes)
-        output_buf = io.StringIO()
-        extract_text_to_fp(input_buf, output_buf, laparams=LAParams(), output_type='text', codec=None)
-        return output_buf.getvalue()
-    except Exception as e:
-        print(f"[PDF] pdfminer extraction error: {e}")
-        return ""
+    """Extract raw text from PDF for the skill alias matcher (backwards compat)."""
+    rd = _resume_parser.parse(pdf_bytes)
+    # Combine skills list + full raw text for broadest alias matching
+    skills_text = " ".join(rd.get("skills", []))
+    return skills_text + "\n" + rd.get("raw_text", "")
+
+
+def parse_resume_to_json(pdf_bytes: bytes) -> dict:
+    """Full structured parse — returns the complete ResumeData dict."""
+    return _resume_parser.parse(pdf_bytes)
 
 
 # ─── Image OCR via pytesseract (optional, degrades gracefully) ────────────────
