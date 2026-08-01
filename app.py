@@ -510,25 +510,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def clean_vercel_routing_path(request: Request, call_next):
-    # Strip '/api/index.py' from path if Vercel routes internally using rewritten destinations
-    path = request.scope.get("path", "")
-    if path.startswith("/api/index.py"):
-        new_path = path.replace("/api/index.py", "")
-        if not new_path.startswith("/api"):
-            new_path = "/api" + new_path
-        request.scope["path"] = new_path
-    
-    # Also clean raw_path in ASGI scope if present
-    raw_path = request.scope.get("raw_path", b"")
-    if raw_path.startswith(b"/api/index.py"):
-        new_raw_path = raw_path.replace(b"/api/index.py", b"")
-        if not new_raw_path.startswith(b"/api"):
-            new_raw_path = b"/api" + new_raw_path
-        request.scope["raw_path"] = new_raw_path
+class VercelPathMiddleware:
+    def __init__(self, app):
+        self.app = app
 
-    return await call_next(request)
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            # Strip '/api/index.py' from path if Vercel routes internally using rewritten destinations
+            path = scope.get("path", "")
+            if path.startswith("/api/index.py"):
+                new_path = path.replace("/api/index.py", "")
+                if not new_path.startswith("/api"):
+                    new_path = "/api" + new_path
+                scope["path"] = new_path
+            
+            # Also clean raw_path in ASGI scope if present
+            raw_path = scope.get("raw_path", b"")
+            if raw_path.startswith(b"/api/index.py"):
+                new_raw_path = raw_path.replace(b"/api/index.py", b"")
+                if not new_raw_path.startswith(b"/api"):
+                    new_raw_path = b"/api" + new_raw_path
+                scope["raw_path"] = new_raw_path
+
+        await self.app(scope, receive, send)
+
+app.add_middleware(VercelPathMiddleware)
 
 # ═══════════════════════════════════════════════════════════════
 #  HEALTH CHECK
