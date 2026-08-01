@@ -218,78 +218,139 @@ export default function OnboardingPage() {
 
         {/* ── STEP 2: Resume ── */}
         {step === 2 && (
-          <div className="card anim-fade-up onboarding-card" style={{ padding: 36 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#dbeafe',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📄</div>
-              <div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a' }}>Upload Your Resume</h2>
-                <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>PDF, Word, or JSON document · Max 5MB</p>
+          <div className="anim-fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* ── Path A: Upload Resume ── */}
+            <div className="card onboarding-card" style={{ padding: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#dbeafe',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📄</div>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a' }}>
+                    Option 1 — Upload Your Resume
+                  </h2>
+                  <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
+                    We'll auto-extract your skills and suggest the best-matching jobs
+                  </p>
+                </div>
+              </div>
+
+              {/* Drop zone */}
+              <div
+                onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onClick={() => !resumeFile && !uploaded && fileRef.current.click()}
+                style={{
+                  border: `2px dashed ${dragOver ? '#4f46e5' : uploaded ? '#22c55e' : resumeFile ? '#4f46e5' : '#cbd5e1'}`,
+                  borderRadius: 12, padding: '36px 24px', textAlign: 'center',
+                  background: dragOver ? '#f5f3ff' : uploaded ? '#f0fdf4' : resumeFile ? '#f5f3ff' : '#f8fafc',
+                  cursor: (resumeFile || uploaded) ? 'default' : 'pointer', transition: 'all 0.2s'
+                }}>
+                <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.json" hidden onChange={e => setFile(e.target.files[0])} />
+
+                {uploaded ? (
+                  /* Existing or newly uploaded resume */
+                  <div>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#dcfce7', border: '2px solid #86efac',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 22 }}>✅</div>
+                    <p style={{ fontWeight: 700, color: '#0f172a', fontSize: 15, marginBottom: 4 }}>Resume Uploaded!</p>
+                    <p style={{ fontSize: 13, color: '#64748b' }}>{resumeFile?.name || 'Your existing resume is on file'}</p>
+                    {extractedInfo && (
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#166534', marginTop: 8,
+                        background: '#f0fdf4', padding: '6px 14px', borderRadius: 8, display: 'inline-block' }}>
+                        🎉 {extractedInfo}
+                      </p>
+                    )}
+                    <div style={{ marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' }}>
+                      <button onClick={handleFinish} disabled={saving} className="btn-navy" style={{ padding: '10px 24px' }}>
+                        {saving ? '⏳ Matching...' : '🚀 Match Jobs with Resume →'}
+                      </button>
+                      <button onClick={() => { setUploaded(false); setResumeFile(null); setExtractedInfo(''); }}
+                        className="btn-ghost" style={{ padding: '10px 16px', fontSize: 13 }}>
+                        Replace
+                      </button>
+                    </div>
+                  </div>
+                ) : resumeFile ? (
+                  /* File selected but not yet uploaded */
+                  <div>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: '#ede9fe',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontSize: 22 }}>📄</div>
+                    <p style={{ fontWeight: 600, color: '#0f172a', marginBottom: 2 }}>{resumeFile.name}</p>
+                    <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>{(resumeFile.size / 1024).toFixed(1)} KB</p>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                      <button onClick={e => { e.stopPropagation(); handleUpload(); }} disabled={uploading}
+                        className="btn-navy" style={{ padding: '9px 20px' }}>
+                        {uploading ? '⏳ Uploading & Extracting Skills...' : '⬆️ Upload & Extract Skills'}
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); setResumeFile(null); }}
+                        className="btn-ghost" style={{ padding: '9px 16px' }}>Remove</button>
+                    </div>
+                  </div>
+                ) : (
+                  /* No file yet */
+                  <>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: '#ede9fe',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>📁</div>
+                    <p style={{ fontWeight: 600, color: '#0f172a', fontSize: 14, marginBottom: 6 }}>Drag & drop your resume here</p>
+                    <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>or click to browse files</p>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                      {['JSON', 'PDF', 'DOC', 'DOCX'].map(f => (
+                        <span key={f} style={{ padding: '3px 10px', borderRadius: 6, background: '#ede9fe',
+                          color: '#6d28d9', fontSize: 11, fontWeight: 700 }}>{f}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Drop zone */}
-            <div
-              onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) setFile(f); }}
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onClick={() => !resumeFile && fileRef.current.click()}
-              style={{
-                border: `2px dashed ${dragOver ? '#4f46e5' : uploaded ? '#22c55e' : resumeFile ? '#4f46e5' : '#cbd5e1'}`,
-                borderRadius: 14, padding: '52px 24px', textAlign: 'center',
-                background: dragOver ? '#f5f3ff' : uploaded ? '#f0fdf4' : resumeFile ? '#f5f3ff' : '#f8fafc',
-                cursor: resumeFile ? 'default' : 'pointer', transition: 'all 0.2s'
-              }}>
-              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.json" hidden onChange={e => setFile(e.target.files[0])} />
+            {/* ── Divider ── */}
+            {!uploaded && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', flexShrink: 0 }}>OR</span>
+                <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+              </div>
+            )}
 
-              {uploaded ? (
-                <div>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#dcfce7', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>✅</div>
-                  <p style={{ fontWeight: 700, color: '#0f172a', fontSize: 16, marginBottom: 4 }}>Resume Uploaded!</p>
-                  <p style={{ fontSize: 13, color: '#64748b' }}>{resumeFile.name}</p>
-                  {extractedInfo && <p style={{ fontSize: 13, fontWeight: 600, color: '#166534', marginTop: 8 }}>{extractedInfo}</p>}
-                </div>
-              ) : resumeFile ? (
-                <div>
-                  <div style={{ width: 56, height: 56, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>📄</div>
-                  <p style={{ fontWeight: 600, color: '#0f172a', marginBottom: 4 }}>{resumeFile.name}</p>
-                  <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>{(resumeFile.size / 1024).toFixed(1)} KB</p>
-                  <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                    <button onClick={e => { e.stopPropagation(); handleUpload(); }} disabled={uploading} className="btn-navy" style={{ padding: '9px 20px' }}>
-                      {uploading ? 'Uploading & Extracting...' : '⬆️ Upload Now'}
-                    </button>
-                    <button onClick={e => { e.stopPropagation(); setResumeFile(null); }} className="btn-ghost" style={{ padding: '9px 16px' }}>Remove</button>
+            {/* ── Path B: Choose Skills Manually (only shown when no resume uploaded) ── */}
+            {!uploaded && (
+              <div className="card" style={{ padding: 24, border: '2px solid #e0e7ff', background: 'linear-gradient(135deg, #f5f3ff, #ede9fe22)',
+                cursor: 'pointer' }} onClick={() => setStep(3)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: '#ede9fe', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>🎯</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 3 }}>
+                      Option 2 — Choose Skills Manually
+                    </p>
+                    <p style={{ fontSize: 13, color: '#64748b' }}>
+                      Don't have a resume? Pick your skills from our list and set your proficiency level
+                    </p>
                   </div>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#4f46e5',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+                    fontSize: 18, flexShrink: 0 }}>→</div>
                 </div>
-              ) : (
-                <>
-                  <div style={{ width: 56, height: 56, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 26 }}>📁</div>
-                  <p style={{ fontWeight: 600, color: '#0f172a', fontSize: 15, marginBottom: 6 }}>Drag & drop your resume here</p>
-                  <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>or click to browse files</p>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                    {['JSON', 'PDF', 'DOC', 'DOCX'].map(f => (
-                      <span key={f} style={{ padding: '3px 10px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9', fontSize: 11, fontWeight: 700 }}>{f}</span>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+                  {['Python', 'JavaScript', 'React', 'SQL', 'DevOps', 'Machine Learning'].map(s => (
+                    <span key={s} style={{ padding: '3px 10px', borderRadius: 20, background: '#ede9fe',
+                      color: '#6d28d9', fontSize: 12, fontWeight: 600 }}>{s}</span>
+                  ))}
+                  <span style={{ padding: '3px 10px', borderRadius: 20, background: '#f1f5f9',
+                    color: '#64748b', fontSize: 12 }}>+more</span>
+                </div>
+              </div>
+            )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28 }}>
+            {/* ── Navigation ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
               <button onClick={() => setStep(1)} className="btn-ghost" style={{ padding: '11px 22px' }}>← Back</button>
-              
-              {uploaded ? (
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => setStep(3)} className="btn-ghost" style={{ padding: '11px 16px', fontSize: 13 }}>
-                    Optional: Edit Skills
-                  </button>
-                  <button onClick={handleFinish} disabled={saving} className="btn-navy" style={{ padding: '11px 28px' }}>
-                    {saving ? 'Matching...' : 'Finish & Match Jobs →'}
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => setStep(3)} className="btn-navy" style={{ padding: '11px 28px' }}>
-                  Select Skills Manually →
+              {uploaded && (
+                <button onClick={() => setStep(3)} className="btn-ghost" style={{ padding: '11px 18px', fontSize: 13 }}>
+                  ✏️ Edit Skills Instead
                 </button>
               )}
             </div>
