@@ -31,9 +31,12 @@ export default function OnboardingPage() {
     });
   }, []);
 
+  const [extractedInfo, setExtractedInfo] = useState('');
+
   const setFile = (f) => {
-    const ok = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!ok.includes(f.type)) return alert('Please upload PDF or Word only');
+    const okExts = ['.pdf', '.doc', '.docx', '.json'];
+    const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+    if (!okExts.includes(ext)) return alert('Please upload PDF, Word, or JSON file');
     setResumeFile(f);
   };
 
@@ -43,8 +46,16 @@ export default function OnboardingPage() {
     try {
       const fd = new FormData();
       fd.append('resume', resumeFile);
-      await axios.post('/api/profile/resume', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post('/api/profile/resume', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setUploaded(true);
+      if (res.data.extractedSkills && res.data.extractedSkills.length > 0) {
+        setExtractedInfo(`Extracted ${res.data.extractedSkills.length} skills from your JSON resume!`);
+        setSelSkills(prev => {
+          const next = { ...prev };
+          res.data.extractedSkills.forEach(s => { next[s.id] = s.level || 4; });
+          return next;
+        });
+      }
     } catch { alert('Upload failed'); }
     finally { setUploading(false); }
   };
@@ -174,7 +185,7 @@ export default function OnboardingPage() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📄</div>
               <div>
                 <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0f172a' }}>Upload Your Resume</h2>
-                <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>PDF or Word document · Max 5MB</p>
+                <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>PDF, Word, or JSON document · Max 5MB</p>
               </div>
             </div>
 
@@ -190,13 +201,14 @@ export default function OnboardingPage() {
                 background: dragOver ? '#f5f3ff' : uploaded ? '#f0fdf4' : resumeFile ? '#f5f3ff' : '#f8fafc',
                 cursor: resumeFile ? 'default' : 'pointer', transition: 'all 0.2s'
               }}>
-              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" hidden onChange={e => setFile(e.target.files[0])} />
+              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.json" hidden onChange={e => setFile(e.target.files[0])} />
 
               {uploaded ? (
                 <div>
                   <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#dcfce7', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>✅</div>
                   <p style={{ fontWeight: 700, color: '#0f172a', fontSize: 16, marginBottom: 4 }}>Resume Uploaded!</p>
                   <p style={{ fontSize: 13, color: '#64748b' }}>{resumeFile.name}</p>
+                  {extractedInfo && <p style={{ fontSize: 13, fontWeight: 600, color: '#166534', marginTop: 8 }}>{extractedInfo}</p>}
                 </div>
               ) : resumeFile ? (
                 <div>
@@ -205,7 +217,7 @@ export default function OnboardingPage() {
                   <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>{(resumeFile.size / 1024).toFixed(1)} KB</p>
                   <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                     <button onClick={e => { e.stopPropagation(); handleUpload(); }} disabled={uploading} className="btn-navy" style={{ padding: '9px 20px' }}>
-                      {uploading ? 'Uploading...' : '⬆️ Upload Now'}
+                      {uploading ? 'Uploading & Extracting...' : '⬆️ Upload Now'}
                     </button>
                     <button onClick={e => { e.stopPropagation(); setResumeFile(null); }} className="btn-ghost" style={{ padding: '9px 16px' }}>Remove</button>
                   </div>
@@ -216,7 +228,7 @@ export default function OnboardingPage() {
                   <p style={{ fontWeight: 600, color: '#0f172a', fontSize: 15, marginBottom: 6 }}>Drag & drop your resume here</p>
                   <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>or click to browse files</p>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
-                    {['PDF', 'DOC', 'DOCX'].map(f => (
+                    {['JSON', 'PDF', 'DOC', 'DOCX'].map(f => (
                       <span key={f} style={{ padding: '3px 10px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9', fontSize: 11, fontWeight: 700 }}>{f}</span>
                     ))}
                   </div>

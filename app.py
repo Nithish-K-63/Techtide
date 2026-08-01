@@ -222,6 +222,61 @@ INITIAL_JOBS_DATA = [
       { "id": "postgresql", "weight": 20 }, { "id": "redis", "weight": 10 }, { "id": "docker", "weight": 10 }
     ],
     "tags": ["Python", "FastAPI", "PostgreSQL", "Redis"]
+  },
+  {
+    "id": "job_006", "title": "Mobile App Developer", "company": "Appify Labs",
+    "location": "Bangalore, India", "type": "Full-time", "salary": "₹10 - 18 LPA",
+    "industry": "Mobile Apps", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "AL", "logoColor": "#f59e0b",
+    "description": "Develop cross-platform and native mobile applications using Kotlin, Swift, or React Native.",
+    "requiredSkills": [
+      { "id": "kotlin", "weight": 30 }, { "id": "swift", "weight": 25 },
+      { "id": "javascript", "weight": 20 }, { "id": "rest_api", "weight": 15 }, { "id": "git", "weight": 10 }
+    ],
+    "tags": ["Kotlin", "Swift", "React Native", "Mobile"]
+  },
+  {
+    "id": "job_007", "title": "Data Engineer", "company": "BigData Matrix",
+    "location": "Hyderabad, India", "type": "Full-time", "salary": "₹16 - 26 LPA",
+    "industry": "Data Engineering", "experience": "3-6 years", "postedDaysAgo": 4, "logo": "BM", "logoColor": "#06b6d4",
+    "description": "Construct large-scale data warehouses, ETL pipelines, and real-time streaming architectures.",
+    "requiredSkills": [
+      { "id": "python", "weight": 30 }, { "id": "postgresql", "weight": 25 },
+      { "id": "mysql", "weight": 20 }, { "id": "aws", "weight": 15 }, { "id": "sql_analytics", "weight": 10 }
+    ],
+    "tags": ["Python", "PostgreSQL", "ETL", "SQL"]
+  },
+  {
+    "id": "job_008", "title": "AI/ML Engineer", "company": "Cognitive AI Systems",
+    "location": "Gurgaon, India", "type": "Full-time", "salary": "₹20 - 35 LPA",
+    "industry": "Artificial Intelligence", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "CA", "logoColor": "#8b5cf6",
+    "description": "Deploy deep learning and generative AI models for real-world enterprise automation.",
+    "requiredSkills": [
+      { "id": "deep_learning", "weight": 30 }, { "id": "tensorflow", "weight": 25 },
+      { "id": "pytorch", "weight": 20 }, { "id": "nlp", "weight": 15 }, { "id": "python", "weight": 10 }
+    ],
+    "tags": ["Deep Learning", "TensorFlow", "PyTorch", "NLP"]
+  },
+  {
+    "id": "job_009", "title": "Cloud Architect", "company": "Apex Infra Networks",
+    "location": "Noida, India", "type": "Full-time", "salary": "₹22 - 38 LPA",
+    "industry": "Cloud Architecture", "experience": "5-8 years", "postedDaysAgo": 6, "logo": "AI", "logoColor": "#3b82f6",
+    "description": "Architect secure, multi-cloud enterprise ecosystems with IaC using Terraform and AWS/Azure.",
+    "requiredSkills": [
+      { "id": "aws", "weight": 30 }, { "id": "azure", "weight": 25 },
+      { "id": "terraform", "weight": 20 }, { "id": "kubernetes", "weight": 15 }, { "id": "linux", "weight": 10 }
+    ],
+    "tags": ["AWS", "Azure", "Terraform", "Cloud"]
+  },
+  {
+    "id": "job_010", "title": "Cybersecurity Specialist", "company": "SecureNet Global",
+    "location": "Delhi, India", "type": "Full-time", "salary": "₹15 - 28 LPA",
+    "industry": "Cybersecurity", "experience": "3-6 years", "postedDaysAgo": 3, "logo": "SG", "logoColor": "#ef4444",
+    "description": "Perform vulnerability assessments, pen testing, network security monitoring and Incident response.",
+    "requiredSkills": [
+      { "id": "linux", "weight": 35 }, { "id": "python", "weight": 25 },
+      { "id": "ci_cd", "weight": 20 }, { "id": "problem_solving", "weight": 10 }, { "id": "critical_thinking", "weight": 10 }
+    ],
+    "tags": ["Linux", "Security", "Python", "Networking"]
   }
 ]
 
@@ -606,11 +661,47 @@ async def update_skills(body: SkillsUpdateBody, current_user: dict = Depends(get
     
     return {"user": user_without_password(user), "message": "Skills updated successfully"}
 
+def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
+    import json
+    try:
+        data = json.loads(json_bytes.decode("utf-8", errors="ignore"))
+    except Exception:
+        return []
+
+    text_content = []
+    def extract_strings(obj):
+        if isinstance(obj, str):
+            text_content.append(obj.lower())
+        elif isinstance(obj, dict):
+            for v in obj.values():
+                extract_strings(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract_strings(item)
+
+    extract_strings(data)
+    full_text = " ".join(text_content)
+
+    all_catalog_skills = []
+    for cat in INITIAL_SKILLS_DATA.get("categories", []):
+        for sk in cat.get("skills", []):
+            all_catalog_skills.append((sk["id"], sk["name"].lower()))
+
+    extracted_user_skills = []
+    extracted_ids = set()
+    for sk_id, sk_name in all_catalog_skills:
+        if sk_id in full_text or sk_name in full_text:
+            if sk_id not in extracted_ids:
+                extracted_ids.add(sk_id)
+                extracted_user_skills.append({"id": sk_id, "level": 4})
+
+    return extracted_user_skills
+
 @app.post("/api/profile/resume")
 async def upload_resume(resume: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
     ext = Path(resume.filename).suffix.lower()
-    if ext not in (".pdf", ".doc", ".docx"):
-        raise HTTPException(status_code=400, detail="Only PDF and Word documents are allowed")
+    if ext not in (".pdf", ".doc", ".docx", ".json"):
+        raise HTTPException(status_code=400, detail="Only PDF, Word, and JSON documents are allowed")
     
     filename = f"resume_{int(datetime.now(timezone.utc).timestamp() * 1000)}{ext}"
     filepath = UPLOADS_DIR / filename
@@ -621,19 +712,44 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
     with open(filepath, "wb") as f:
         f.write(content)
 
+    extracted_skills = []
+    if ext == ".json":
+        extracted_skills = extract_skills_from_json(content)
+
     d = get_db()
     resume_data = {
         "profile.resumeFileName": filename,
         "profile.resumeOriginalName": resume.filename,
         "profile.resumeUploadedAt": datetime.now(timezone.utc).isoformat(),
     }
+
+    if extracted_skills:
+        existing_skills = current_user.get("profile", {}).get("skills", [])
+        existing_ids = {s["id"] for s in existing_skills}
+        merged_skills = list(existing_skills)
+        for es in extracted_skills:
+            if es["id"] not in existing_ids:
+                merged_skills.append(es)
+        resume_data["profile.skills"] = merged_skills
+        current_user.setdefault("profile", {})["skills"] = merged_skills
+        
+        # update memory fallback store
+        idx = next((i for i, u in enumerate(MEM_USERS) if u["id"] == current_user["id"]), None)
+        if idx is not None:
+            MEM_USERS[idx].setdefault("profile", {})["skills"] = merged_skills
+
     if d is not None:
         try:
             await d.users.update_one({"id": current_user["id"]}, {"$set": resume_data})
         except Exception:
             pass
     
-    return {"message": "Resume uploaded successfully", "filename": filename, "originalName": resume.filename}
+    return {
+        "message": "Resume uploaded successfully",
+        "filename": filename,
+        "originalName": resume.filename,
+        "extractedSkills": extracted_skills
+    }
 
 @app.put("/api/profile/info")
 async def update_profile_info(body: ProfileInfoBody, current_user: dict = Depends(get_current_user)):
