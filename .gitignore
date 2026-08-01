@@ -14,9 +14,12 @@ yarn-error.log*
 lerna-debug.log*
 
 # Build Artifacts
-client/dist/
+# Note: client/dist is intentionally NOT ignored – Vercel needs pre-built React files
 dist/
 build/
+
+# Vercel local config
+.vercel/
 
 # Python & Virtual Environments
 __pycache__/
