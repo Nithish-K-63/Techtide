@@ -1,33 +1,49 @@
 {
-  "functions": {
-    "api/*.py": {
-      "runtime": "@vercel/python"
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    },
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
-  },
-  "rewrites": [
+  ],
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/index.py"
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
     },
     {
-      "source": "/assets/:path*",
-      "destination": "/client/dist/assets/:path*"
+      "src": "/uploads/(.*)",
+      "dest": "/api/index.py"
     },
     {
-      "source": "/favicon.svg",
-      "destination": "/client/dist/favicon.svg"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "source": "/icons.svg",
-      "destination": "/client/dist/icons.svg"
+      "src": "/favicon.svg",
+      "dest": "/favicon.svg"
     },
     {
-      "source": "/favicon.ico",
-      "destination": "/client/dist/favicon.ico"
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
     },
     {
-      "source": "/:path*",
-      "destination": "/client/dist/index.html"
+      "src": "/icons.svg",
+      "dest": "/icons.svg"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
