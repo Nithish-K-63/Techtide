@@ -356,18 +356,20 @@ INITIAL_JOBS_DATA = [
   }
 ]
 
-# In-memory fallback stores (used if MongoDB Cloud is unavailable)
+# In-memory fallback stores (used if database is empty)
 MEM_USERS = []
 MEM_JOBS = list(INITIAL_JOBS_DATA)
 MEM_SKILLS = dict(INITIAL_SKILLS_DATA)
 MEM_APPS = []
+MEM_NOTIFICATIONS = []
+
 
 # ═══════════════════════════════════════════════════════════════
 #  JWT HELPERS
 # ═══════════════════════════════════════════════════════════════
-def create_token(user_id: str, username: str) -> str:
+def create_token(user_id: str, username: str, role: str = "user") -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=JWT_EXPIRE_DAYS)
-    payload = {"id": user_id, "username": username, "exp": expire}
+    payload = {"id": user_id, "username": username, "role": role, "exp": expire}
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 def decode_token(token: str) -> dict:
@@ -440,6 +442,7 @@ class RegisterBody(BaseModel):
     email: str
     password: str
     fullName: Optional[str] = ""
+    role: Optional[str] = "user"  # "user" or "recruiter"
 
 class LoginBody(BaseModel):
     username: str
@@ -465,6 +468,13 @@ class ApplicationBody(BaseModel):
     phone: Optional[str] = ""
     linkedIn: Optional[str] = ""
     portfolio: Optional[str] = ""
+
+class ApplicationStatusBody(BaseModel):
+    status: str
+    counselingNote: Optional[str] = ""
+
+class NotificationMarkBody(BaseModel):
+    ids: List[str] = []
 
 from contextlib import asynccontextmanager
 
@@ -519,6 +529,7 @@ async def register(body: RegisterBody):
         raise HTTPException(status_code=400, detail="Username, email, and password are required")
     
     d = get_db()
+    role = body.role if body.role in ("user", "recruiter") else "user"
     hashed_password = pwd_context.hash(body.password)
     new_user = {
         "id": str(uuid.uuid4()),
@@ -526,6 +537,7 @@ async def register(body: RegisterBody):
         "email": body.email,
         "fullName": body.fullName or body.username,
         "password": hashed_password,
+        "role": role,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "profile": {
             "skills": [],
@@ -553,7 +565,7 @@ async def register(body: RegisterBody):
             raise HTTPException(status_code=409, detail="Username or email already exists")
         MEM_USERS.append(new_user)
 
-    token = create_token(new_user["id"], new_user["username"])
+    token = create_token(new_user["id"], new_user["username"], new_user.get("role", "user"))
     return {
         "token": token,
         "user": user_without_password(new_user),
@@ -582,7 +594,7 @@ async def login(body: LoginBody):
     if not pwd_context.verify(body.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
-    token = create_token(user["id"], user["username"])
+    token = create_token(user["id"], user["username"], user.get("role", "user"))
     return {
         "token": token,
         "user": user_without_password(user),
@@ -1410,6 +1422,32 @@ async def update_profile_info(body: ProfileInfoBody, current_user: dict = Depend
 # ═══════════════════════════════════════════════════════════════
 #  APPLICATION ROUTES
 # ═══════════════════════════════════════════════════════════════
+async def _create_notification(d, recipient_ids: list, message: str, notif_type: str, ref_id: str = ""):
+    """Create notifications for a list of recipient user IDs."""
+    now = datetime.now(timezone.utc).isoformat()
+    notifs = [
+        {
+            "id": str(uuid.uuid4()),
+            "recipientId": rid,
+            "message": message,
+            "type": notif_type,
+            "refId": ref_id,
+            "read": False,
+            "createdAt": now,
+        }
+        for rid in recipient_ids
+    ]
+    if not notifs:
+        return
+    if d is not None:
+        try:
+            await d.notifications.insert_many(notifs)
+        except Exception:
+            pass
+    else:
+        MEM_NOTIFICATIONS.extend(notifs)
+
+
 @app.post("/api/applications", status_code=201)
 async def create_application(body: ApplicationBody, current_user: dict = Depends(get_current_user)):
     if not body.jobId:
@@ -1427,9 +1465,24 @@ async def create_application(body: ApplicationBody, current_user: dict = Depends
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    # Resolve the applicant's full name
+    applicant_name = current_user.get("username", "A candidate")
+    if d is not None:
+        try:
+            u = await d.users.find_one({"id": current_user["id"]})
+            if u:
+                applicant_name = u.get("fullName") or u.get("username", applicant_name)
+        except Exception:
+            pass
+    else:
+        u = next((u for u in MEM_USERS if u["id"] == current_user["id"]), None)
+        if u:
+            applicant_name = u.get("fullName") or u.get("username", applicant_name)
+
     new_app = {
         "id": str(uuid.uuid4()),
         "userId": current_user["id"],
+        "applicantName": applicant_name,
         "jobId": body.jobId,
         "jobTitle": job["title"],
         "company": job["company"],
@@ -1442,6 +1495,7 @@ async def create_application(body: ApplicationBody, current_user: dict = Depends
         "linkedIn": body.linkedIn or "",
         "portfolio": body.portfolio or "",
         "status": "applied",
+        "counselingNote": "",
         "appliedAt": datetime.now(timezone.utc).isoformat(),
         "updatedAt": datetime.now(timezone.utc).isoformat(),
     }
@@ -1453,14 +1507,23 @@ async def create_application(body: ApplicationBody, current_user: dict = Depends
                 raise HTTPException(status_code=409, detail="Already applied to this job")
             await d.applications.insert_one(new_app)
             new_app.pop("_id", None)
+            # Notify all recruiters
+            recruiter_cursor = d.users.find({"role": "recruiter"}, {"_id": 0, "id": 1})
+            recruiters = await recruiter_cursor.to_list(length=200)
+            recruiter_ids = [r["id"] for r in recruiters]
         except HTTPException:
             raise
         except Exception:
-            pass
+            recruiter_ids = []
     else:
         if any(a["userId"] == current_user["id"] and a["jobId"] == body.jobId for a in MEM_APPS):
             raise HTTPException(status_code=409, detail="Already applied to this job")
         MEM_APPS.append(new_app)
+        recruiter_ids = [u["id"] for u in MEM_USERS if u.get("role") == "recruiter"]
+
+    # Fire-and-forget: notify recruiters
+    notif_msg = f"{applicant_name} applied for {job['title']} at {job['company']}"
+    await _create_notification(d, recruiter_ids, notif_msg, "new_application", new_app["id"])
 
     clean_app = clean_mongo_doc(new_app)
     return {"application": clean_app, "message": "Application submitted successfully!"}
@@ -1477,7 +1540,7 @@ async def get_applications(current_user: dict = Depends(get_current_user)):
             pass
     if not apps:
         apps = [a for a in MEM_APPS if a["userId"] == current_user["id"]]
-    return {"applications": apps, "total": len(apps)}
+    return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
 
 @app.get("/api/applications/check/{job_id}")
 async def check_application(job_id: str, current_user: dict = Depends(get_current_user)):
@@ -1490,7 +1553,7 @@ async def check_application(job_id: str, current_user: dict = Depends(get_curren
             pass
     if not app_found:
         app_found = next((a for a in MEM_APPS if a["userId"] == current_user["id"] and a["jobId"] == job_id), None)
-    return {"applied": app_found is not None, "application": app_found}
+    return {"applied": app_found is not None, "application": clean_mongo_doc(app_found) if app_found else None}
 
 @app.delete("/api/applications/{app_id}")
 async def delete_application(app_id: str, current_user: dict = Depends(get_current_user)):
@@ -1509,6 +1572,150 @@ async def delete_application(app_id: str, current_user: dict = Depends(get_curre
         return {"message": "Application withdrawn"}
         
     raise HTTPException(status_code=404, detail="Application not found")
+
+# ═══════════════════════════════════════════════════════════════
+#  RECRUITER ROUTES
+# ═══════════════════════════════════════════════════════════════
+async def _require_recruiter(current_user: dict):
+    if current_user.get("role") == "recruiter":
+        return
+    d = get_db()
+    user_doc = None
+    if d is not None:
+        try:
+            user_doc = await d.users.find_one({"id": current_user.get("id")})
+        except Exception:
+            pass
+    if user_doc is None:
+        user_doc = next((u for u in MEM_USERS if u["id"] == current_user.get("id")), None)
+    
+    if not user_doc or user_doc.get("role") != "recruiter":
+        raise HTTPException(status_code=403, detail="Recruiter access only")
+
+@app.get("/api/recruiter/applications")
+async def recruiter_get_all_applications(current_user: dict = Depends(get_current_user)):
+    await _require_recruiter(current_user)
+    d = get_db()
+    apps = []
+    if d is not None:
+        try:
+            cursor = d.applications.find({}, {"_id": 0})
+            apps = await cursor.to_list(length=500)
+        except Exception:
+            pass
+    if not apps:
+        apps = list(MEM_APPS)
+    return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
+
+@app.get("/api/recruiter/applicant/{user_id}")
+async def recruiter_get_applicant(user_id: str, current_user: dict = Depends(get_current_user)):
+    await _require_recruiter(current_user)
+    d = get_db()
+    user = None
+    if d is not None:
+        try:
+            user = await d.users.find_one({"id": user_id})
+        except Exception:
+            pass
+    if user is None:
+        user = next((u for u in MEM_USERS if u["id"] == user_id), None)
+    if not user:
+        raise HTTPException(status_code=404, detail="Applicant not found")
+    return {"applicant": user_without_password(user)}
+
+@app.put("/api/recruiter/applications/{app_id}/status")
+async def recruiter_update_status(app_id: str, body: ApplicationStatusBody, current_user: dict = Depends(get_current_user)):
+    await _require_recruiter(current_user)
+    valid_statuses = {"applied", "reviewing", "interview", "hired", "rejected"}
+    if body.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    d = get_db()
+    update_data = {
+        "status": body.status,
+        "counselingNote": body.counselingNote or "",
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    updated_app = None
+    if d is not None:
+        try:
+            await d.applications.update_one({"id": app_id}, {"$set": update_data})
+            updated_app = await d.applications.find_one({"id": app_id}, {"_id": 0})
+        except Exception:
+            pass
+    
+    if updated_app is None:
+        idx = next((i for i, a in enumerate(MEM_APPS) if a["id"] == app_id), None)
+        if idx is not None:
+            MEM_APPS[idx].update(update_data)
+            updated_app = MEM_APPS[idx]
+    
+    if not updated_app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    # Notify the applicant about their status change
+    recruiter_name = current_user.get("username", "Recruiter")
+    if d is not None:
+        try:
+            rec_doc = await d.users.find_one({"id": current_user["id"]})
+            if rec_doc:
+                recruiter_name = rec_doc.get("fullName") or rec_doc.get("username", recruiter_name)
+        except Exception:
+            pass
+    notif_msg = f"Your application for {updated_app.get('jobTitle','the role')} at {updated_app.get('company','')} was updated to '{body.status}' by a recruiter."
+    if body.counselingNote:
+        notif_msg += " A counseling note has been added."
+    await _create_notification(d, [updated_app["userId"]], notif_msg, "status_update", app_id)
+
+    return {"application": clean_mongo_doc(updated_app), "message": "Status updated"}
+
+# ═══════════════════════════════════════════════════════════════
+#  NOTIFICATION ROUTES
+# ═══════════════════════════════════════════════════════════════
+@app.get("/api/notifications")
+async def get_notifications(current_user: dict = Depends(get_current_user)):
+    d = get_db()
+    notifs = []
+    if d is not None:
+        try:
+            cursor = d.notifications.find({"recipientId": current_user["id"]}, {"_id": 0})
+            notifs = await cursor.to_list(length=100)
+            # Sort newest first
+            notifs.sort(key=lambda n: n.get("createdAt", ""), reverse=True)
+        except Exception:
+            pass
+    if not notifs:
+        notifs = sorted(
+            [n for n in MEM_NOTIFICATIONS if n["recipientId"] == current_user["id"]],
+            key=lambda n: n.get("createdAt", ""),
+            reverse=True,
+        )
+    unread_count = sum(1 for n in notifs if not n.get("read"))
+    return {"notifications": [clean_mongo_doc(n) for n in notifs], "unreadCount": unread_count}
+
+@app.post("/api/notifications/mark-read")
+async def mark_notifications_read(body: NotificationMarkBody, current_user: dict = Depends(get_current_user)):
+    d = get_db()
+    if d is not None:
+        try:
+            if body.ids:
+                await d.notifications.update_many(
+                    {"id": {"$in": body.ids}, "recipientId": current_user["id"]},
+                    {"$set": {"read": True}}
+                )
+            else:
+                await d.notifications.update_many(
+                    {"recipientId": current_user["id"]},
+                    {"$set": {"read": True}}
+                )
+        except Exception:
+            pass
+    else:
+        for n in MEM_NOTIFICATIONS:
+            if n["recipientId"] == current_user["id"]:
+                if not body.ids or n["id"] in body.ids:
+                    n["read"] = True
+    return {"message": "Marked as read"}
 
 # ═══════════════════════════════════════════════════════════════
 #  SERVE UPLOADS & REACT FRONTEND
@@ -1542,6 +1749,38 @@ if DIST_DIR.exists():
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
 
+def free_port(port: int):
+    """Kill any process currently occupying the given port (Windows-compatible)."""
+    try:
+        import psutil
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.laddr.port == port and conn.status == "LISTEN":
+                try:
+                    proc = psutil.Process(conn.pid)
+                    print(f"  [Auto-cleanup] Killing process {conn.pid} ({proc.name()}) on port {port}...")
+                    proc.kill()
+                    proc.wait(timeout=3)
+                    print(f"  [Auto-cleanup] Port {port} is now free.")
+                except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                    print(f"  [Auto-cleanup] Could not kill PID {conn.pid}: {e}")
+    except ImportError:
+        # psutil not installed — fallback to netstat on Windows
+        import subprocess, re
+        try:
+            result = subprocess.run(
+                ["netstat", "-ano"],
+                capture_output=True, text=True
+            )
+            for line in result.stdout.splitlines():
+                if f":{port} " in line and "LISTENING" in line:
+                    pid = line.strip().split()[-1]
+                    if pid.isdigit():
+                        print(f"  [Auto-cleanup] Killing PID {pid} on port {port}...")
+                        subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True)
+                        print(f"  [Auto-cleanup] Port {port} is now free.")
+        except Exception as e:
+            print(f"  [Auto-cleanup] Warning: Could not free port {port}: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "=" * 55)
@@ -1552,4 +1791,5 @@ if __name__ == "__main__":
     print(f"  Health:    http://localhost:{PORT}/api/health")
     print(f"  Frontend:  http://localhost:{PORT}")
     print("=" * 55 + "\n")
+    free_port(PORT)
     uvicorn.run(app, host="127.0.0.1", port=PORT, log_level="info")

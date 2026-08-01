@@ -11,6 +11,7 @@ const StarIcon = () => (
 export default function LoginPage() {
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ username: '', email: '', password: '', fullName: '' });
+  const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -25,11 +26,13 @@ export default function LoginPage() {
     try {
       if (mode === 'login') {
         const u = await login(form.username, form.password);
+        if (u?.role === 'recruiter') { navigate('/dashboard'); return; }
         navigate(u?.profile?.skills?.length > 0 ? '/dashboard' : '/onboarding');
       } else {
         if (!form.fullName || !form.username || !form.email || !form.password)
           return setError('All fields are required');
-        await register(form.username, form.email, form.password, form.fullName);
+        const u = await register(form.username, form.email, form.password, form.fullName, role);
+        if (u?.role === 'recruiter') { navigate('/dashboard'); return; }
         navigate('/onboarding');
       }
     } catch (err) {
@@ -127,9 +130,27 @@ export default function LoginPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {mode === 'register' && (
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Full Name</label>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Full Name</label>
                     <input value={form.fullName} onChange={e => update('fullName', e.target.value)}
                       placeholder="John Doe" className="input-field" required />
+                  </div>
+                )}
+                {mode === 'register' && (
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>I am registering as</label>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      {[{v:'user', label:'🎯 Job Seeker', desc:'Find and apply for jobs'}, {v:'recruiter', label:'🧑‍💼 Recruiter', desc:'Review and manage applications'}].map(r => (
+                        <button key={r.v} type="button" onClick={() => setRole(r.v)}
+                          style={{
+                            flex: 1, padding: '10px 8px', borderRadius: 10, border: `2px solid ${role === r.v ? '#4f46e5' : '#e2e8f0'}`,
+                            background: role === r.v ? 'rgba(79,70,229,0.06)' : '#fff',
+                            cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s'
+                          }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: role === r.v ? '#4f46e5' : '#0f172a' }}>{r.label}</div>
+                          <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{r.desc}</div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <div>

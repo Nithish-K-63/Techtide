@@ -40,7 +40,7 @@ const Ic = ({ n, size = 16, color = 'currentColor', strokeWidth = 2 }) => (
 );
 
 // ─── Top Navigation ───────────────────────────────────────────────────────────
-const TopNav = ({ tab, setTab, user, logout }) => {
+const TopNav = ({ tab, setTab, user, logout, notifications, unreadCount, onBellClick, bellOpen, setBellOpen }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navItems = [
     { id: 'home',    label: 'Home',        icon: 'home' },
@@ -72,6 +72,37 @@ const TopNav = ({ tab, setTab, user, logout }) => {
 
         {/* Right */}
         <div className="nav-right">
+          {/* Notification Bell */}
+          <div style={{ position: 'relative' }}>
+            <button onClick={onBellClick} style={{ position: 'relative', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}>
+              <Ic n="bell" size={16} />
+              {unreadCount > 0 && (
+                <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', fontSize: 9, fontWeight: 800, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {bellOpen && (
+              <div style={{ position: 'absolute', right: 0, top: 40, width: 320, maxHeight: 360, overflowY: 'auto', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 200 }}>
+                <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 13, color: '#0f172a', display: 'flex', justifyContent: 'space-between' }}>
+                  Notifications
+                  <button onClick={() => setBellOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Ic n="close" size={14} /></button>
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>No notifications yet</div>
+                ) : notifications.map(n => (
+                  <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid #f8fafc', background: n.read ? '#fff' : '#f0f6ff', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}>{n.type === 'new_application' ? '🔔' : '📋'}</span>
+                    <div>
+                      <p style={{ fontSize: 12, color: '#334155', lineHeight: 1.5 }}>{n.message}</p>
+                      <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{new Date(n.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</p>
+                    </div>
+                    {!n.read && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', flexShrink: 0, marginTop: 3 }} />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="nav-avatar" title={user?.fullName || user?.username}>
             {(user?.fullName || user?.username || 'U')[0].toUpperCase()}
@@ -437,13 +468,13 @@ const SkillRadar = ({ userSkills, cats }) => {
 
 // ─── Applications Tab ─────────────────────────────────────────────────────────
 const ApplicationsView = ({ applications, onWithdraw }) => {
-  const STATUS_STEPS = ['applied', 'reviewed', 'interview', 'offered'];
+  const STATUS_STEPS = ['applied', 'reviewing', 'interview', 'hired'];
   const statusInfo = {
-    applied:   { label: 'Applied',   cls: 'status-applied' },
-    reviewed:  { label: 'Reviewed',  cls: 'status-reviewed' },
-    interview: { label: 'Interview', cls: 'status-interview' },
-    offered:   { label: 'Offered',   cls: 'status-offered' },
-    rejected:  { label: 'Rejected',  cls: 'status-rejected' },
+    applied:   { label: 'Applied',   cls: 'status-applied',   emoji: '📝' },
+    reviewing: { label: 'Reviewing', cls: 'status-reviewed',  emoji: '🔍' },
+    interview: { label: 'Interview', cls: 'status-interview', emoji: '🎤' },
+    hired:     { label: 'Hired',     cls: 'status-offered',   emoji: '🎉' },
+    rejected:  { label: 'Rejected',  cls: 'status-rejected',  emoji: '❌' },
   };
   if (!applications.length) return (
     <div className="card empty-state">
@@ -471,7 +502,7 @@ const ApplicationsView = ({ applications, onWithdraw }) => {
                     <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>{app.jobTitle}</h3>
                     <p style={{ fontSize: 13, color: '#64748b' }}>{app.company} · {app.location}</p>
                   </div>
-                  <span className={`status-pill ${si.cls}`}>● {si.label}</span>
+                  <span className={`status-pill ${si.cls}`}>{si.emoji} {si.label}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 16, marginTop: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#2d2b6e' }}>{app.salary}</span>
@@ -505,6 +536,17 @@ const ApplicationsView = ({ applications, onWithdraw }) => {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Recruiter Counseling Note */}
+            {app.counselingNote && (
+              <div style={{ padding: '12px 16px', borderRadius: 10, background: 'linear-gradient(135deg, #fffbeb, #fef3c7)', border: '1px solid #fde68a', marginBottom: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 18, flexShrink: 0 }}>💬</span>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Recruiter Counseling Note</p>
+                  <p style={{ fontSize: 13, color: '#78350f', lineHeight: 1.6 }}>{app.counselingNote}</p>
                 </div>
               </div>
             )}
@@ -552,6 +594,37 @@ export default function DashboardPage() {
   const userSkills = user?.profile?.skills || [];
   const appliedIds = new Set(applications.map(a => a.jobId));
 
+  // ── Notifications ───────────────────────────────────────────
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [bellOpen, setBellOpen] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get('/api/notifications');
+      setNotifications(res.data.notifications || []);
+      setUnreadCount(res.data.unreadCount || 0);
+    } catch {}
+  };
+
+  const handleBellClick = async () => {
+    const opening = !bellOpen;
+    setBellOpen(opening);
+    if (opening && unreadCount > 0) {
+      try {
+        await axios.post('/api/notifications/mark-read', { ids: [] });
+        setUnreadCount(0);
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const t = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     Promise.all([
       axios.get('/api/jobs'),
@@ -598,7 +671,9 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0f2f8' }}>
-      <TopNav tab={tab} setTab={setTab} user={user} logout={handleLogout} />
+      <TopNav tab={tab} setTab={setTab} user={user} logout={handleLogout}
+        notifications={notifications} unreadCount={unreadCount}
+        onBellClick={handleBellClick} bellOpen={bellOpen} setBellOpen={setBellOpen} />
 
       <div className="page-container">
 
