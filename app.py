@@ -54,7 +54,10 @@ JWT_SECRET = os.getenv("JWT_SECRET", "career_portal_jwt_secret_2024")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_DAYS = 7
 
-UPLOADS_DIR = BASE_DIR / "server" / "uploads"
+if "VERCEL" in os.environ:
+    UPLOADS_DIR = Path("/tmp/tmp_uploads")
+else:
+    UPLOADS_DIR = BASE_DIR / "server" / "uploads"
 DIST_DIR = BASE_DIR / "client" / "dist"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
