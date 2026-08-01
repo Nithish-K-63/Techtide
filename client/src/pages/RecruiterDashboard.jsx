@@ -3,44 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-// Status config
+// ─── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CFG = {
-  applied:   { label: 'Applied',   color: '#6366f1', bg: '#eef2ff', emoji: '\uD83D\uDCDD' },
-  reviewing: { label: 'Reviewing', color: '#f59e0b', bg: '#fffbeb', emoji: '\uD83D\uDD0D' },
-  interview: { label: 'Interview', color: '#8b5cf6', bg: '#f5f3ff', emoji: '\uD83C\uDFA4' },
-  hired:     { label: 'Hired',     color: '#10b981', bg: '#ecfdf5', emoji: '\uD83C\uDF89' },
-  rejected:  { label: 'Rejected',  color: '#ef4444', bg: '#fff1f2', emoji: '\u274C' },
+  applied:   { label: 'Applied',   color: '#6366f1', bg: '#eef2ff', emoji: '📝' },
+  reviewing: { label: 'Reviewing', color: '#f59e0b', bg: '#fffbeb', emoji: '🔍' },
+  interview: { label: 'Interview', color: '#8b5cf6', bg: '#f5f3ff', emoji: '🎤' },
+  hired:     { label: 'Hired',     color: '#10b981', bg: '#ecfdf5', emoji: '🎉' },
+  rejected:  { label: 'Rejected',  color: '#ef4444', bg: '#fff1f2', emoji: '✗' },
 };
 
-// SVG Icon component
-const Ic = ({ n, size = 16, color = 'currentColor' }) => {
-  const paths = {
-    bell:   'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
-    close:  'M18 6L6 18M6 6l12 12',
-    search: 'M21 21l-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z',
-    link:   'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
-    resume: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
-    phone:  'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z',
-    trash:  'M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6',
-  };
-  const d = paths[n] || '';
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      {d.split('M').filter(Boolean).map((seg, i) => <path key={i} d={`M${seg}`} />)}
-    </svg>
-  );
+// ─── SVG Icon helper (same as DashboardPage) ───────────────────────────────────
+const PATHS = {
+  bell:   'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
+  close:  'M18 6L6 18M6 6l12 12',
+  search: 'M21 21l-4.35-4.35M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z',
+  link:   'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
+  resume: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  phone:  'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z',
+  eye:    'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  user:   'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
 };
-
-// Skill chip
-const SkillChip = ({ name, level }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20,
-    background: 'linear-gradient(135deg,#ede9fe,#ddd6fe)', border: '1px solid #c4b5fd' }}>
-    <span style={{ fontSize: 11, fontWeight: 700, color: '#5b21b6' }}>{name}</span>
-    <span style={{ fontSize: 10, color: '#7c3aed', opacity: 0.7 }}>L{level}</span>
-  </div>
+const Ic = ({ n, size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    {(PATHS[n] || '').split('M').filter(Boolean).map((d, i) => <path key={i} d={`M${d}`} />)}
+  </svg>
 );
 
-// Applicant Detail Slide Panel
+// ─── Skill chip ────────────────────────────────────────────────────────────────
+const SkillChip = ({ name, level }) => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '3px 10px', borderRadius: 20,
+    background: 'var(--violet-bg)', border: '1px solid #c4b5fd',
+    fontSize: 11, fontWeight: 700, color: 'var(--violet-text)',
+  }}>
+    {name} <span style={{ opacity: 0.6 }}>L{level}</span>
+  </span>
+);
+
+// ─── Applicant Detail Slide Panel ──────────────────────────────────────────────
 const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   const [profile, setProfile] = useState(null);
   const [noteText, setNoteText] = useState(app.counselingNote || '');
@@ -64,7 +65,7 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   const saveStatus = async (newStatus, note) => {
     try {
       const res = await axios.put(`/api/recruiter/applications/${app.id}/status`, {
-        status: newStatus, counselingNote: note
+        status: newStatus, counselingNote: note,
       });
       onStatusChange(res.data.application);
       return true;
@@ -89,60 +90,101 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
     setUpdatingStatus(false);
   };
 
+  const resumeUrl = profile?.profile?.resumeFileName
+    ? `/uploads/${profile.profile.resumeFileName}`
+    : null;
+
   const sc = STATUS_CFG[status] || STATUS_CFG.applied;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 400, display: 'flex', justifyContent: 'flex-end' }}>
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }} />
-      <div style={{ position: 'relative', width: Math.min(520, window.innerWidth), height: '100%', background: '#fff', boxShadow: '-8px 0 40px rgba(0,0,0,0.25)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(3px)' }} />
+
+      {/* Panel */}
+      <div style={{
+        position: 'relative', width: Math.min(520, window.innerWidth),
+        height: '100%', background: '#fff',
+        boxShadow: '-4px 0 32px rgba(0,0,0,0.12)',
+        overflowY: 'auto', display: 'flex', flexDirection: 'column',
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}>
         {/* Panel Header */}
-        <div style={{ padding: '20px 24px 16px', background: 'linear-gradient(135deg,#2d2b6e,#4f46e5)', color: '#fff', flexShrink: 0 }}>
+        <div style={{ padding: '20px 24px 16px', background: 'linear-gradient(135deg, #2d2b6e, #4f46e5)', color: '#fff', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 2 }}>{app.applicantName || 'Candidate'}</h2>
-              <p style={{ fontSize: 13, opacity: 0.8 }}>Applied for <strong>{app.jobTitle}</strong> at {app.company}</p>
-              <p style={{ fontSize: 11, opacity: 0.6, marginTop: 2 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 3 }}>{app.applicantName || 'Candidate'}</h2>
+              <p style={{ fontSize: 13, opacity: 0.82 }}>
+                Applied for <strong>{app.jobTitle}</strong> · {app.company}
+              </p>
+              <p style={{ fontSize: 11, opacity: 0.6, marginTop: 3 }}>
                 {new Date(app.appliedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#fff' }}>
+            <button onClick={onClose} style={{
+              background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: 8, padding: '6px 8px', cursor: 'pointer', color: '#fff',
+              display: 'flex', alignItems: 'center',
+            }}>
               <Ic n="close" size={15} />
             </button>
           </div>
           <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 11, opacity: 0.65 }}>Status:</span>
-            <span style={{ background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 11, padding: '3px 10px', borderRadius: 20, border: `1px solid ${sc.color}33` }}>
+            <span style={{
+              background: sc.bg, color: sc.color, fontWeight: 700, fontSize: 11,
+              padding: '3px 10px', borderRadius: 20, border: `1px solid ${sc.color}33`,
+            }}>
               {sc.emoji} {sc.label}
             </span>
           </div>
         </div>
 
-        <div style={{ padding: 22, flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {/* Panel Body */}
+        <div style={{ padding: '20px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
+
           {/* Status Buttons */}
-          <div style={{ padding: 14, borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Update Status</p>
+          <div className="card" style={{ padding: 14 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Update Status</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {Object.entries(STATUS_CFG).map(([key, cfg]) => (
                 <button key={key} onClick={() => handleStatusChange(key)} disabled={updatingStatus}
-                  style={{ padding: '5px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s',
-                    border: `2px solid ${status === key ? cfg.color : '#e2e8f0'}`,
+                  style={{
+                    padding: '5px 13px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                    cursor: 'pointer', transition: 'all 0.18s',
+                    border: `2px solid ${status === key ? cfg.color : 'var(--border)'}`,
                     background: status === key ? cfg.bg : '#fff',
-                    color: status === key ? cfg.color : '#64748b',
-                    opacity: updatingStatus ? 0.6 : 1 }}>
+                    color: status === key ? cfg.color : 'var(--text-muted)',
+                    opacity: updatingStatus ? 0.6 : 1,
+                  }}>
                   {cfg.emoji} {cfg.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Contact */}
+          {/* Contact Info */}
           {(app.phone || app.linkedIn || app.portfolio) && (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Contact</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Contact</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                {app.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 12, color: '#166534' }}><Ic n="phone" size={11} color="#16a34a" /> {app.phone}</span>}
-                {app.linkedIn && <a href={`https://${app.linkedIn.replace('https://','')}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 12, color: '#1d4ed8', textDecoration: 'none' }}><Ic n="link" size={11} color="#2563eb" /> LinkedIn</a>}
-                {app.portfolio && <a href={`https://${app.portfolio.replace('https://','')}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#fdf4ff', border: '1px solid #e9d5ff', fontSize: 12, color: '#7e22ce', textDecoration: 'none' }}><Ic n="link" size={11} color="#9333ea" /> Portfolio</a>}
+                {app.phone && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 12, color: '#166534' }}>
+                    <Ic n="phone" size={11} color="#16a34a" /> {app.phone}
+                  </span>
+                )}
+                {app.linkedIn && (
+                  <a href={`https://${app.linkedIn.replace('https://', '')}`} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 12, color: '#1d4ed8', textDecoration: 'none' }}>
+                    <Ic n="link" size={11} color="#2563eb" /> LinkedIn
+                  </a>
+                )}
+                {app.portfolio && (
+                  <a href={`https://${app.portfolio.replace('https://', '')}`} target="_blank" rel="noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 8, background: '#fdf4ff', border: '1px solid #e9d5ff', fontSize: 12, color: '#7e22ce', textDecoration: 'none' }}>
+                    <Ic n="link" size={11} color="#9333ea" /> Portfolio
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -150,125 +192,187 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
           {/* Cover Letter */}
           {app.coverLetter && (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Cover Letter</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Cover Letter</p>
               <div style={{ padding: '12px 14px', borderRadius: 10, background: '#f8faff', border: '1px solid #e0e7ff', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
                 {app.coverLetter}
               </div>
             </div>
           )}
 
-          {/* Profile Skills */}
+          {/* Candidate Info from Profile */}
           {profile && (
             <>
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
-                  Skills ({profile.profile?.skills?.length || 0})
-                </p>
-                {profile.profile?.skills?.length > 0 ? (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {profile.profile.skills.map(sk => (
-                      <SkillChip key={sk.id} name={sk.id.replace(/_/g, ' ')} level={sk.level} />
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 13, color: '#94a3b8' }}>No skills added yet.</p>
-                )}
-              </div>
-
-              {/* Resume info */}
-              {profile.profile?.resumeFileName && (
-                <div style={{ padding: '12px 16px', borderRadius: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Ic n="resume" size={20} color="#16a34a" />
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#166534' }}>
-                      {profile.profile.resumeOriginalName || profile.profile.resumeFileName}
-                    </p>
-                    {profile.profile.resumeUploadedAt && (
-                      <p style={{ fontSize: 11, color: '#15803d' }}>
-                        Uploaded {new Date(profile.profile.resumeUploadedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Profile Details Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
-                {[
-                  { l: 'Target Role', v: profile.profile?.targetRole },
-                  { l: 'Experience', v: profile.profile?.experience },
-                  { l: 'Education', v: profile.profile?.education },
-                  { l: 'Email', v: profile.email },
-                ].filter(x => x.v).map(({ l, v }) => (
-                  <div key={l} style={{ padding: '9px 12px', borderRadius: 8, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                    <p style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{l}</p>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</p>
-                  </div>
-                ))}
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Candidate Details</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { l: 'Target Role', v: profile.profile?.targetRole },
+                    { l: 'Experience', v: profile.profile?.experience },
+                    { l: 'Education', v: profile.profile?.education },
+                    { l: 'Email', v: profile.email },
+                  ].filter(x => x.v).map(({ l, v }) => (
+                    <div key={l} className="card" style={{ padding: '9px 12px' }}>
+                      <p style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{l}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-h)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Bio */}
               {profile.profile?.bio && (
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Bio</p>
-                  <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.65, padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #f1f5f9' }}>{profile.profile.bio}</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Bio</p>
+                  <p className="card" style={{ padding: '10px 14px', fontSize: 13, color: '#334155', lineHeight: 1.65 }}>
+                    {profile.profile.bio}
+                  </p>
                 </div>
               )}
+
+              {/* Skills */}
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
+                  Skills ({profile.profile?.skills?.length || 0})
+                </p>
+                {profile.profile?.skills?.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {profile.profile.skills.map(sk => (
+                      <SkillChip key={sk.id} name={sk.id.replace(/_/g, ' ')} level={sk.level} />
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No skills added yet.</p>
+                )}
+              </div>
+
+              {/* Resume */}
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Resume</p>
+                {resumeUrl ? (
+                  <div className="card" style={{ padding: '14px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Ic n="resume" size={20} color="#16a34a" />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#166534', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {profile.profile.resumeOriginalName || profile.profile.resumeFileName}
+                        </p>
+                        {profile.profile.resumeUploadedAt && (
+                          <p style={{ fontSize: 11, color: '#15803d' }}>
+                            Uploaded {new Date(profile.profile.resumeUploadedAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                      <a
+                        href={resumeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '8px 14px', borderRadius: 8,
+                          background: '#2d2b6e', color: '#fff',
+                          textDecoration: 'none', fontSize: 12, fontWeight: 700,
+                          flexShrink: 0, whiteSpace: 'nowrap',
+                          transition: 'background 0.18s',
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#232160'}
+                        onMouseOut={e => e.currentTarget.style.background = '#2d2b6e'}
+                      >
+                        <Ic n="eye" size={13} color="#fff" /> View Resume
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="card" style={{ padding: '14px 16px', background: '#f8fafc', border: '1px dashed var(--border)' }}>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Ic n="resume" size={16} color="var(--text-muted)" />
+                      No resume uploaded by this candidate.
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
           {/* Counseling Note */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Counseling Note</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Counseling Note</p>
               {savedNote && <span style={{ fontSize: 11, color: '#10b981', fontWeight: 700 }}>✓ Saved</span>}
-              {saving && !savedNote && <span style={{ fontSize: 11, color: '#94a3b8' }}>Saving...</span>}
+              {saving && !savedNote && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Saving…</span>}
             </div>
             <textarea
               value={noteText}
               onChange={e => handleNoteChange(e.target.value)}
-              placeholder="Write guidance for this candidate — e.g. skills to improve, interview tips, next steps..."
-              style={{ width: '100%', minHeight: 110, padding: '11px 13px', borderRadius: 10, border: '1.5px solid #fde68a', background: '#fffbeb', fontSize: 13, color: '#78350f', lineHeight: 1.65, resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+              placeholder="Write guidance for this candidate — e.g. skills to improve, interview tips, next steps…"
+              style={{
+                width: '100%', minHeight: 110, padding: '11px 13px',
+                borderRadius: 10, border: '1.5px solid #fde68a',
+                background: '#fffbeb', fontSize: 13, color: '#78350f',
+                lineHeight: 1.65, resize: 'vertical', outline: 'none',
+                boxSizing: 'border-box', fontFamily: 'inherit',
+              }}
             />
-            <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Auto-saved as you type. The candidate will see this note.</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              Auto-saved as you type. The candidate will see this note.
+            </p>
           </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-// Application Card
+// ─── Application Card ──────────────────────────────────────────────────────────
 const AppCard = ({ app, onSelect, isSelected }) => {
   const sc = STATUS_CFG[app.status] || STATUS_CFG.applied;
   return (
     <div onClick={() => onSelect(app)}
-      style={{ padding: 18, borderRadius: 14, border: `2px solid ${isSelected ? '#4f46e5' : '#e2e8f0'}`,
-        background: isSelected ? 'linear-gradient(135deg,#eef2ff,#f5f3ff)' : '#fff',
-        cursor: 'pointer', transition: 'all 0.18s',
-        boxShadow: isSelected ? '0 4px 20px rgba(79,70,229,0.15)' : '0 1px 4px rgba(0,0,0,0.04)' }}>
+      className="card"
+      style={{
+        padding: '18px 20px', cursor: 'pointer',
+        border: isSelected ? '2px solid #4f46e5' : '1px solid var(--border)',
+        background: isSelected ? 'linear-gradient(135deg, #eef2ff, #f5f3ff)' : '#fff',
+        boxShadow: isSelected ? '0 4px 20px rgba(79,70,229,0.12)' : undefined,
+        transition: 'all 0.18s',
+      }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10,
-          background: `linear-gradient(135deg, ${app.logoColor || '#6366f1'}, ${(app.logoColor || '#6366f1')}88)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>
+        {/* Company logo */}
+        <div style={{
+          width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+          background: `linear-gradient(135deg, ${app.logoColor || '#6366f1'}, ${(app.logoColor || '#6366f1')}99)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontWeight: 800, fontSize: 13,
+        }}>
           {app.logo || '?'}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{app.jobTitle}</h3>
-          <p style={{ fontSize: 12, color: '#64748b' }}>{app.company}</p>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-h)', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {app.jobTitle}
+          </h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{app.company}</p>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: sc.bg, color: sc.color, border: `1px solid ${sc.color}33`, flexShrink: 0, whiteSpace: 'nowrap' }}>
+        <span style={{
+          fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20,
+          background: sc.bg, color: sc.color, border: `1px solid ${sc.color}33`,
+          flexShrink: 0, whiteSpace: 'nowrap',
+        }}>
           {sc.emoji} {sc.label}
         </span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>{app.applicantName || 'Candidate'}</p>
-          <p style={{ fontSize: 11, color: '#94a3b8' }}>{new Date(app.appliedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-h)' }}>{app.applicantName || 'Candidate'}</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            {new Date(app.appliedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
         </div>
         {app.counselingNote && (
           <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontWeight: 700 }}>
-            \uD83D\uDCAC Note
+            💬 Note
           </span>
         )}
       </div>
@@ -276,7 +380,7 @@ const AppCard = ({ app, onSelect, isSelected }) => {
   );
 };
 
-// Main Recruiter Dashboard
+// ─── Main Recruiter Dashboard ──────────────────────────────────────────────────
 export default function RecruiterDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -326,159 +430,200 @@ export default function RecruiterDashboard() {
 
   const total = applications.length;
   const counts = {
-    applied: applications.filter(a => a.status === 'applied').length,
+    applied:   applications.filter(a => a.status === 'applied').length,
     reviewing: applications.filter(a => a.status === 'reviewing').length,
     interview: applications.filter(a => a.status === 'interview').length,
-    hired: applications.filter(a => a.status === 'hired').length,
-    rejected: applications.filter(a => a.status === 'rejected').length,
+    hired:     applications.filter(a => a.status === 'hired').length,
+    rejected:  applications.filter(a => a.status === 'rejected').length,
   };
 
   const filtered = applications.filter(a => {
     const q = search.toLowerCase();
-    const mq = !q || (a.applicantName || '').toLowerCase().includes(q) || a.jobTitle.toLowerCase().includes(q) || a.company.toLowerCase().includes(q);
+    const mq = !q || (a.applicantName || '').toLowerCase().includes(q)
+      || a.jobTitle.toLowerCase().includes(q)
+      || a.company.toLowerCase().includes(q);
     const ms = filterStatus === 'all' || a.status === filterStatus;
     return mq && ms;
   }).sort((a, b) => new Date(b.appliedAt) - new Date(a.appliedAt));
 
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ width: 48, height: 48, border: '4px solid #4f46e5', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-        <p style={{ color: '#94a3b8', fontWeight: 500, fontSize: 14 }}>Loading Recruiter Dashboard...</p>
+        <div style={{ width: 44, height: 44, border: '4px solid #4f46e5', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+        <p style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: 14 }}>Loading Recruiter Dashboard…</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      `}</style>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: "'Inter', system-ui, sans-serif" }}>
 
-      {/* Navigation */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,23,42,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>\u26A1</div>
-          <div>
-            <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>CareerPath</span>
-            <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff' }}>RECRUITER</span>
-          </div>
-        </div>
+      {/* ── Top Navigation (matches job-seeker nav) ── */}
+      <nav className="topnav">
+        <div className="topnav-inner">
+          {/* Logo */}
+          <a className="nav-logo" href="#" onClick={e => e.preventDefault()}>
+            <div className="nav-logo-icon">⚡</div>
+            <span className="nav-logo-text">CareerPath</span>
+            <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: '#2d2b6e', color: '#fff' }}>
+              RECRUITER
+            </span>
+          </a>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1 }} />
+
           {/* Bell */}
-          <div style={{ position: 'relative' }}>
-            <button onClick={handleBellClick}
-              style={{ position: 'relative', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '7px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#94a3b8' }}>
-              <Ic n="bell" size={17} />
-              {unreadCount > 0 && (
-                <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: '#fff', borderRadius: '50%', fontSize: 9, fontWeight: 800, minWidth: 17, height: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', border: '2px solid #0f172a' }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-            {bellOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 44, width: 340, maxHeight: 380, overflowY: 'auto', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.5)', zIndex: 300 }}>
-                <div style={{ padding: '13px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', fontWeight: 700, fontSize: 13, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  Notifications
-                  <button onClick={() => setBellOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}>
-                    <Ic n="close" size={14} />
-                  </button>
-                </div>
-                {notifications.length === 0 ? (
-                  <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: 13 }}>No notifications yet</div>
-                ) : notifications.map(n => (
-                  <div key={n.id} style={{ padding: '11px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: n.read ? 'transparent' : 'rgba(99,102,241,0.09)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 15, flexShrink: 0 }}>{n.type === 'new_application' ? '\uD83D\uDD14' : '\uD83D\uDCCB'}</span>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>{n.message}</p>
-                      <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{new Date(n.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</p>
-                    </div>
-                    {!n.read && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', flexShrink: 0, marginTop: 4 }} />}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <div className="nav-right">
+            <div style={{ position: 'relative' }}>
+              <button onClick={handleBellClick}
+                style={{ position: 'relative', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}>
+                <Ic n="bell" size={16} />
+                {unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', borderRadius: '50%', fontSize: 9, fontWeight: 800, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
 
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 13 }}>
-            {(user?.fullName || user?.username || 'R')[0].toUpperCase()}
+              {/* Notification dropdown */}
+              {bellOpen && (
+                <div style={{ position: 'absolute', right: 0, top: 40, width: 320, maxHeight: 360, overflowY: 'auto', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 200 }}>
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 13, color: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Notifications
+                    <button onClick={() => setBellOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex' }}>
+                      <Ic n="close" size={14} />
+                    </button>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '24px 16px', textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>No notifications yet</div>
+                  ) : notifications.map(n => (
+                    <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid #f8fafc', background: n.read ? '#fff' : '#f0f6ff', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 15, flexShrink: 0 }}>{n.type === 'new_application' ? '🔔' : '📋'}</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 12, color: '#334155', lineHeight: 1.5 }}>{n.message}</p>
+                        <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                          {new Date(n.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
+                      {!n.read && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1', flexShrink: 0, marginTop: 3 }} />}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="nav-avatar" title={user?.fullName || user?.username}>
+              {(user?.fullName || user?.username || 'R')[0].toUpperCase()}
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>
+              {user?.fullName || user?.username}
+            </span>
+            <button onClick={() => { logout(); navigate('/login'); }}
+              className="btn-ghost"
+              style={{ padding: '7px 14px', fontSize: 13 }}>
+              Sign Out
+            </button>
           </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>{user?.fullName || user?.username}</span>
-          <button onClick={() => { logout(); navigate('/login'); }}
-            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-            Sign Out
-          </button>
         </div>
       </nav>
 
-      {/* Content */}
+      {/* ── Main Content ── */}
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px' }}>
-        {/* Hero */}
+
+        {/* Page Header */}
         <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 4 }}>
-            \uD83E\uDDD1\u200D\uD83D\uDCBC Recruiter Dashboard
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-h)', letterSpacing: '-0.4px', marginBottom: 4 }}>
+            🧑‍💼 Recruiter Dashboard
           </h1>
-          <p style={{ color: '#64748b', fontSize: 14 }}>Monitor all applications, view candidate profiles, update status, and add counseling notes.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            Monitor applications, view candidate profiles &amp; resumes, update status, and add counseling notes.
+          </p>
         </div>
 
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 12, marginBottom: 28 }}>
+        {/* Stats Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 14, marginBottom: 28 }}>
           {[
-            { label: 'Total Applications', value: total,           color: '#6366f1', bg: 'rgba(99,102,241,0.12)', emoji: '\uD83D\uDCCB' },
-            { label: 'New',                value: counts.applied,  color: '#6366f1', bg: 'rgba(99,102,241,0.07)', emoji: '\uD83D\uDCDD' },
-            { label: 'Reviewing',          value: counts.reviewing,color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  emoji: '\uD83D\uDD0D' },
-            { label: 'Interviews',         value: counts.interview,color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', emoji: '\uD83C\uDFA4' },
-            { label: 'Hired',              value: counts.hired,    color: '#10b981', bg: 'rgba(16,185,129,0.1)', emoji: '\uD83C\uDF89' },
-            { label: 'Rejected',           value: counts.rejected, color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  emoji: '\u274C' },
+            { label: 'Total',      value: total,           color: '#6366f1', iconBg: '#eef2ff', emoji: '📋' },
+            { label: 'New',        value: counts.applied,  color: '#6366f1', iconBg: '#eef2ff', emoji: '📝' },
+            { label: 'Reviewing',  value: counts.reviewing, color: '#f59e0b', iconBg: '#fffbeb', emoji: '🔍' },
+            { label: 'Interviews', value: counts.interview, color: '#8b5cf6', iconBg: '#f5f3ff', emoji: '🎤' },
+            { label: 'Hired',      value: counts.hired,    color: '#10b981', iconBg: '#ecfdf5', emoji: '🎉' },
+            { label: 'Rejected',   value: counts.rejected, color: '#ef4444', iconBg: '#fff1f2', emoji: '✗' },
           ].map(s => (
-            <div key={s.label} style={{ padding: '16px 18px', borderRadius: 14, background: s.bg, border: `1px solid ${s.color}22` }}>
-              <div style={{ fontSize: 18, marginBottom: 6 }}>{s.emoji}</div>
-              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: 600 }}>{s.label}</div>
+            <div key={s.label} className="stat-card">
+              <div className="stat-card-icon" style={{ background: s.iconBg }}>{s.emoji}</div>
+              <div className="stat-card-value" style={{ color: s.color }}>{s.value}</div>
+              <div className="stat-card-label">{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Filter bar */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 20, padding: '12px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        {/* Filter Bar */}
+        <div className="card" style={{ padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Search */}
           <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-            <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
+            <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
               <Ic n="search" size={14} />
             </div>
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search candidates, jobs, companies..."
-              style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+            <input
+              id="recruiter-search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search candidates, jobs, companies…"
+              style={{
+                width: '100%', padding: '8px 12px 8px 36px',
+                borderRadius: 10, border: '1px solid var(--border)',
+                background: '#f8fafc', color: 'var(--text-h)',
+                fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'inherit',
+              }}
+            />
           </div>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            style={{ padding: '8px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#1e293b', color: '#e2e8f0', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          {/* Status filter */}
+          <select
+            id="recruiter-status-filter"
+            value={filterStatus}
+            onChange={e => setFilterStatus(e.target.value)}
+            style={{
+              padding: '8px 14px', borderRadius: 10,
+              border: '1px solid var(--border)', background: '#fff',
+              color: 'var(--text-h)', fontSize: 13, cursor: 'pointer',
+              fontFamily: 'inherit', outline: 'none',
+            }}>
             <option value="all">All Statuses</option>
-            {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.emoji} {v.label}</option>)}
+            {Object.entries(STATUS_CFG).map(([k, v]) => (
+              <option key={k} value={k}>{v.emoji} {v.label}</option>
+            ))}
           </select>
-          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+          </span>
         </div>
 
-        {/* Application Cards */}
+        {/* Application Cards Grid */}
         {filtered.length === 0 ? (
-          <div style={{ padding: '56px 24px', textAlign: 'center', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)' }}>
-            <div style={{ fontSize: 40, marginBottom: 14 }}>\uD83D\uDCCB</div>
-            <h3 style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
+          <div style={{ padding: '56px 24px', textAlign: 'center', borderRadius: 16, background: '#fff', border: '1px dashed var(--border)' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+            <h3 style={{ color: 'var(--text-h)', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
               {applications.length === 0 ? 'No Applications Yet' : 'No Results Found'}
             </h3>
-            <p style={{ color: '#64748b', fontSize: 14 }}>
-              {applications.length === 0 ? 'Applications will appear here once candidates start applying.' : 'Try adjusting your search or status filter.'}
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+              {applications.length === 0
+                ? 'Applications will appear here once candidates start applying.'
+                : 'Try adjusting your search or status filter.'}
             </p>
             {(search || filterStatus !== 'all') && (
               <button onClick={() => { setSearch(''); setFilterStatus('all'); }}
-                style={{ marginTop: 16, padding: '8px 20px', borderRadius: 10, background: '#4f46e5', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                className="btn-navy"
+                style={{ marginTop: 16 }}>
                 Clear Filters
               </button>
             )}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 13 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14 }}>
             {filtered.map(app => (
               <AppCard key={app.id} app={app} onSelect={setSelectedApp} isSelected={selectedApp?.id === app.id} />
             ))}
@@ -486,9 +631,13 @@ export default function RecruiterDashboard() {
         )}
       </div>
 
-      {/* Applicant Detail Panel */}
+      {/* Applicant Detail Side Panel */}
       {selectedApp && (
-        <ApplicantPanel app={selectedApp} onClose={() => setSelectedApp(null)} onStatusChange={handleStatusChange} />
+        <ApplicantPanel
+          app={selectedApp}
+          onClose={() => setSelectedApp(null)}
+          onStatusChange={handleStatusChange}
+        />
       )}
     </div>
   );
