@@ -89,22 +89,24 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 INITIAL_SKILLS_DATA = {
   "categories": [
     {
-      "id": "programming", "name": "Programming Languages", "icon": "💻", "color": "#6366f1",
+      "id": "programming", "name": "Programming Languages & Core", "icon": "💻", "color": "#6366f1",
       "skills": [
         { "id": "python", "name": "Python" }, { "id": "javascript", "name": "JavaScript" },
         { "id": "typescript", "name": "TypeScript" }, { "id": "java", "name": "Java" },
         { "id": "csharp", "name": "C#" }, { "id": "cpp", "name": "C++" },
         { "id": "go", "name": "Go" }, { "id": "rust", "name": "Rust" },
         { "id": "kotlin", "name": "Kotlin" }, { "id": "swift", "name": "Swift" },
-        { "id": "php", "name": "PHP" }, { "id": "ruby", "name": "Ruby" }
+        { "id": "php", "name": "PHP" }, { "id": "ruby", "name": "Ruby" },
+        { "id": "oop", "name": "Object-Oriented Programming (OOP)" }
       ]
     },
     {
-      "id": "frontend", "name": "Frontend Development", "icon": "🎨", "color": "#ec4899",
+      "id": "frontend", "name": "Frontend & Mobile", "icon": "🎨", "color": "#ec4899",
       "skills": [
         { "id": "react", "name": "React.js" }, { "id": "vue", "name": "Vue.js" },
         { "id": "angular", "name": "Angular" }, { "id": "nextjs", "name": "Next.js" },
         { "id": "html_css", "name": "HTML/CSS" }, { "id": "tailwind", "name": "Tailwind CSS" },
+        { "id": "bootstrap", "name": "Bootstrap" }, { "id": "flutter", "name": "Flutter" },
         { "id": "redux", "name": "Redux" }, { "id": "graphql_client", "name": "GraphQL (Client)" }
       ]
     },
@@ -118,48 +120,56 @@ INITIAL_SKILLS_DATA = {
       ]
     },
     {
-      "id": "database", "name": "Databases", "icon": "🗄️", "color": "#f59e0b",
+      "id": "database", "name": "Databases & Admin", "icon": "🗄️", "color": "#f59e0b",
       "skills": [
         { "id": "mysql", "name": "MySQL" }, { "id": "postgresql", "name": "PostgreSQL" },
         { "id": "mongodb", "name": "MongoDB" }, { "id": "redis", "name": "Redis" },
         { "id": "firebase", "name": "Firebase" }, { "id": "elasticsearch", "name": "Elasticsearch" },
-        { "id": "sqlite", "name": "SQLite" }
+        { "id": "sqlite", "name": "SQLite" }, { "id": "oracle", "name": "Oracle DB" },
+        { "id": "sql_server", "name": "SQL Server" }, { "id": "db_optimization", "name": "Database Optimization" }
       ]
     },
     {
-      "id": "cloud_devops", "name": "Cloud & DevOps", "icon": "☁️", "color": "#3b82f6",
+      "id": "cloud_devops", "name": "Cloud, DevOps & Security", "icon": "☁️", "color": "#3b82f6",
       "skills": [
         { "id": "aws", "name": "AWS" }, { "id": "azure", "name": "Azure" },
         { "id": "gcp", "name": "Google Cloud" }, { "id": "docker", "name": "Docker" },
-        { "id": "kubernetes", "name": "Kubernetes" }, { "id": "ci_cd", "name": "CI/CD" },
-        { "id": "terraform", "name": "Terraform" }, { "id": "linux", "name": "Linux" }
+        { "id": "kubernetes", "name": "Kubernetes" }, { "id": "ci_cd", "name": "CI/CD & Jenkins" },
+        { "id": "terraform", "name": "Terraform" }, { "id": "linux", "name": "Linux" },
+        { "id": "networking", "name": "Network Security" }, { "id": "ethical_hacking", "name": "Ethical Hacking" },
+        { "id": "siem", "name": "SIEM & Firewalls" }
       ]
     },
     {
-      "id": "data_ai", "name": "Data Science & AI", "icon": "🤖", "color": "#8b5cf6",
+      "id": "data_ai", "name": "Data Science, AI & Analytics", "icon": "🤖", "color": "#8b5cf6",
       "skills": [
         { "id": "machine_learning", "name": "Machine Learning" }, { "id": "deep_learning", "name": "Deep Learning" },
         { "id": "data_analysis", "name": "Data Analysis" }, { "id": "pandas", "name": "Pandas/NumPy" },
         { "id": "tensorflow", "name": "TensorFlow" }, { "id": "pytorch", "name": "PyTorch" },
         { "id": "sql_analytics", "name": "SQL Analytics" }, { "id": "tableau", "name": "Tableau/Power BI" },
-        { "id": "nlp", "name": "NLP" }
+        { "id": "nlp", "name": "NLP" }, { "id": "computer_vision", "name": "Computer Vision" },
+        { "id": "excel", "name": "Microsoft Excel" }, { "id": "statistics", "name": "Statistics" }
       ]
     },
     {
-      "id": "soft_skills", "name": "Soft Skills", "icon": "🌟", "color": "#f97316",
+      "id": "testing_design", "name": "QA Testing & UI/UX Design", "icon": "🧪", "color": "#ec4899",
+      "skills": [
+        { "id": "selenium", "name": "Selenium" }, { "id": "junit", "name": "JUnit" },
+        { "id": "manual_testing", "name": "Manual Testing" }, { "id": "testng", "name": "TestNG" },
+        { "id": "figma", "name": "Figma" }, { "id": "adobe_xd", "name": "Adobe XD" },
+        { "id": "wireframing", "name": "Wireframing" }, { "id": "prototyping", "name": "Prototyping" },
+        { "id": "user_research", "name": "User Research" }
+      ]
+    },
+    {
+      "id": "business_soft", "name": "Business & Soft Skills", "icon": "🌟", "color": "#f97316",
       "skills": [
         { "id": "communication", "name": "Communication" }, { "id": "teamwork", "name": "Teamwork" },
         { "id": "problem_solving", "name": "Problem Solving" }, { "id": "leadership", "name": "Leadership" },
         { "id": "time_management", "name": "Time Management" }, { "id": "critical_thinking", "name": "Critical Thinking" },
-        { "id": "adaptability", "name": "Adaptability" }
-      ]
-    },
-    {
-      "id": "tools", "name": "Tools & Platforms", "icon": "🔧", "color": "#14b8a6",
-      "skills": [
+        { "id": "adaptability", "name": "Adaptability" }, { "id": "req_gathering", "name": "Requirements Gathering" },
         { "id": "git", "name": "Git/GitHub" }, { "id": "jira", "name": "Jira/Agile" },
-        { "id": "figma", "name": "Figma" }, { "id": "postman", "name": "Postman" },
-        { "id": "vscode", "name": "VS Code" }, { "id": "jupyter", "name": "Jupyter Notebook" }
+        { "id": "postman", "name": "Postman / API Testing" }
       ]
     }
   ]
@@ -167,116 +177,182 @@ INITIAL_SKILLS_DATA = {
 
 INITIAL_JOBS_DATA = [
   {
-    "id": "job_001", "title": "Full Stack Developer", "company": "TechNova Solutions",
-    "location": "Bangalore, India", "type": "Full-time", "salary": "₹12 - 18 LPA",
-    "industry": "Software Development", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "TN", "logoColor": "#6366f1",
-    "description": "Build scalable full-stack web applications with React, Node.js and MongoDB. Collaborate with cross-functional teams on new product features.",
+    "id": "job_001", "title": "Software Developer", "company": "CoreTech Systems",
+    "location": "Bangalore, India", "type": "Full-time", "salary": "₹10 - 16 LPA",
+    "industry": "Software Engineering", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "CS", "logoColor": "#6366f1",
+    "description": "Develop and maintain robust software solutions using Java, Python, C++, and OOP principles with Git version control and SQL databases.",
     "requiredSkills": [
+      { "id": "java", "weight": 20 }, { "id": "python", "weight": 20 },
+      { "id": "cpp", "weight": 20 }, { "id": "oop", "weight": 15 },
+      { "id": "git", "weight": 15 }, { "id": "sql_analytics", "weight": 10 }
+    ],
+    "tags": ["Java", "Python", "C++", "OOP", "Git", "SQL"]
+  },
+  {
+    "id": "job_002", "title": "Full Stack Developer", "company": "TechNova Solutions",
+    "location": "Bangalore, India", "type": "Full-time", "salary": "₹12 - 20 LPA",
+    "industry": "Web Development", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "TN", "logoColor": "#3b82f6",
+    "description": "Build end-to-end web applications using HTML, CSS, JavaScript, React on the frontend and Node.js with MongoDB on the backend.",
+    "requiredSkills": [
+      { "id": "html_css", "weight": 15 }, { "id": "javascript", "weight": 20 },
       { "id": "react", "weight": 25 }, { "id": "nodejs", "weight": 25 },
-      { "id": "javascript", "weight": 20 }, { "id": "mongodb", "weight": 15 },
-      { "id": "git", "weight": 10 }, { "id": "rest_api", "weight": 5 }
+      { "id": "mongodb", "weight": 15 }
     ],
-    "tags": ["React", "Node.js", "MongoDB", "REST API"]
+    "tags": ["HTML", "CSS", "JavaScript", "React", "Node.js", "MongoDB"]
   },
   {
-    "id": "job_002", "title": "Data Scientist", "company": "AnalytiQ Corp",
-    "location": "Hyderabad, India", "type": "Full-time", "salary": "₹15 - 25 LPA",
-    "industry": "Data Science & Analytics", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "AQ", "logoColor": "#8b5cf6",
-    "description": "Develop and deploy machine learning models, build data pipelines, and derive business insights from large datasets.",
+    "id": "job_003", "title": "Frontend Developer", "company": "PixelCraft Studios",
+    "location": "Pune, India", "type": "Full-time", "salary": "₹8 - 14 LPA",
+    "industry": "Frontend Engineering", "experience": "1-3 years", "postedDaysAgo": 3, "logo": "PC", "logoColor": "#ec4899",
+    "description": "Craft responsive and interactive user interfaces using modern HTML, CSS, JavaScript, React.js, and Bootstrap framework.",
     "requiredSkills": [
-      { "id": "machine_learning", "weight": 30 }, { "id": "python", "weight": 25 },
-      { "id": "data_analysis", "weight": 20 }, { "id": "pandas", "weight": 15 },
-      { "id": "sql_analytics", "weight": 10 }
+      { "id": "html_css", "weight": 20 }, { "id": "javascript", "weight": 25 },
+      { "id": "react", "weight": 35 }, { "id": "bootstrap", "weight": 20 }
     ],
-    "tags": ["Python", "ML", "Data Analysis", "Pandas"]
+    "tags": ["HTML", "CSS", "JavaScript", "React", "Bootstrap"]
   },
   {
-    "id": "job_003", "title": "UI/UX Frontend Developer", "company": "PixelCraft Studios",
-    "location": "Pune, India", "type": "Full-time", "salary": "₹8 - 15 LPA",
-    "industry": "Digital Design & Frontend", "experience": "1-3 years", "postedDaysAgo": 3, "logo": "PC", "logoColor": "#ec4899",
-    "description": "Design and build pixel-perfect, accessible, and highly responsive user interfaces. Bridge the gap between design and development.",
-    "requiredSkills": [
-      { "id": "react", "weight": 30 }, { "id": "javascript", "weight": 25 },
-      { "id": "html_css", "weight": 20 }, { "id": "figma", "weight": 15 }, { "id": "tailwind", "weight": 10 }
-    ],
-    "tags": ["React", "JavaScript", "Figma", "CSS"]
-  },
-  {
-    "id": "job_004", "title": "DevOps / Platform Engineer", "company": "CloudScale Inc",
-    "location": "Chennai, India", "type": "Full-time", "salary": "₹18 - 28 LPA",
-    "industry": "Cloud & Infrastructure", "experience": "4-6 years", "postedDaysAgo": 5, "logo": "CS", "logoColor": "#3b82f6",
-    "description": "Own the cloud infrastructure, manage CI/CD pipelines, and ensure 99.9% uptime of services running on AWS/GCP.",
-    "requiredSkills": [
-      { "id": "aws", "weight": 30 }, { "id": "docker", "weight": 25 },
-      { "id": "kubernetes", "weight": 20 }, { "id": "ci_cd", "weight": 15 }, { "id": "linux", "weight": 10 }
-    ],
-    "tags": ["AWS", "Docker", "Kubernetes", "CI/CD"]
-  },
-  {
-    "id": "job_005", "title": "Backend API Engineer (Python)", "company": "Zephyr Technologies",
+    "id": "job_004", "title": "Backend Developer", "company": "Zephyr Technologies",
     "location": "Mumbai, India", "type": "Full-time", "salary": "₹14 - 22 LPA",
-    "industry": "API & Microservices", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "ZT", "logoColor": "#10b981",
-    "description": "Build high-throughput APIs and microservices using Python (FastAPI/Django). Design scalable database schemas.",
+    "industry": "Backend Engineering", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "ZT", "logoColor": "#10b981",
+    "description": "Engineer high-performance server architectures and REST APIs using Java, Spring Boot, Node.js, Django, and SQL relational databases.",
     "requiredSkills": [
-      { "id": "python", "weight": 35 }, { "id": "fastapi", "weight": 25 },
-      { "id": "postgresql", "weight": 20 }, { "id": "redis", "weight": 10 }, { "id": "docker", "weight": 10 }
+      { "id": "java", "weight": 20 }, { "id": "spring", "weight": 20 },
+      { "id": "nodejs", "weight": 20 }, { "id": "django", "weight": 15 },
+      { "id": "rest_api", "weight": 15 }, { "id": "sql_analytics", "weight": 10 }
     ],
-    "tags": ["Python", "FastAPI", "PostgreSQL", "Redis"]
+    "tags": ["Java", "Spring Boot", "Node.js", "Django", "REST APIs", "SQL"]
   },
   {
-    "id": "job_006", "title": "Mobile App Developer (React Native)", "company": "Appify Labs",
-    "location": "Bangalore, India", "type": "Full-time", "salary": "₹10 - 18 LPA",
-    "industry": "Mobile Technology", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "AL", "logoColor": "#f59e0b",
-    "description": "Build cross-platform iOS and Android applications using React Native and Kotlin. Integrate backend APIs and push notifications.",
+    "id": "job_005", "title": "Data Analyst", "company": "AnalytiQ Corp",
+    "location": "Hyderabad, India", "type": "Full-time", "salary": "₹8 - 14 LPA",
+    "industry": "Data & Analytics", "experience": "1-3 years", "postedDaysAgo": 2, "logo": "AQ", "logoColor": "#8b5cf6",
+    "description": "Analyze datasets, build automated dashboards in Power BI and Tableau, run SQL queries, and apply statistical models with Excel & Python.",
     "requiredSkills": [
-      { "id": "kotlin", "weight": 30 }, { "id": "javascript", "weight": 25 },
-      { "id": "react", "weight": 20 }, { "id": "rest_api", "weight": 15 }, { "id": "git", "weight": 10 }
+      { "id": "excel", "weight": 20 }, { "id": "sql_analytics", "weight": 25 },
+      { "id": "python", "weight": 15 }, { "id": "tableau", "weight": 25 },
+      { "id": "statistics", "weight": 15 }
     ],
-    "tags": ["Kotlin", "React Native", "JavaScript", "Mobile"]
+    "tags": ["Excel", "SQL", "Python", "Power BI", "Tableau", "Statistics"]
   },
   {
-    "id": "job_007", "title": "Data Engineer", "company": "BigData Matrix",
-    "location": "Hyderabad, India", "type": "Full-time", "salary": "₹16 - 26 LPA",
-    "industry": "Big Data & ETL", "experience": "3-6 years", "postedDaysAgo": 4, "logo": "BM", "logoColor": "#06b6d4",
-    "description": "Design and maintain large-scale ETL pipelines, data warehouses, and streaming architectures for analytics teams.",
+    "id": "job_006", "title": "Data Scientist", "company": "DataMind AI",
+    "location": "Hyderabad, India", "type": "Full-time", "salary": "₹16 - 28 LPA",
+    "industry": "Data Science", "experience": "3-5 years", "postedDaysAgo": 4, "logo": "DM", "logoColor": "#a855f7",
+    "description": "Build predictive machine learning models, manipulate data with Pandas and NumPy, perform SQL queries, and train models using TensorFlow.",
     "requiredSkills": [
-      { "id": "python", "weight": 30 }, { "id": "postgresql", "weight": 25 },
-      { "id": "mysql", "weight": 15 }, { "id": "aws", "weight": 15 }, { "id": "sql_analytics", "weight": 15 }
+      { "id": "python", "weight": 25 }, { "id": "machine_learning", "weight": 25 },
+      { "id": "pandas", "weight": 20 }, { "id": "tensorflow", "weight": 15 },
+      { "id": "sql_analytics", "weight": 15 }
     ],
-    "tags": ["Python", "PostgreSQL", "ETL", "SQL Analytics"]
+    "tags": ["Python", "Machine Learning", "Pandas", "NumPy", "TensorFlow", "SQL"]
   },
   {
-    "id": "job_008", "title": "AI / Machine Learning Engineer", "company": "Cognitive AI Systems",
+    "id": "job_007", "title": "AI/ML Engineer", "company": "Cognitive AI Labs",
     "location": "Gurgaon, India", "type": "Full-time", "salary": "₹20 - 35 LPA",
-    "industry": "Artificial Intelligence", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "CA", "logoColor": "#a855f7",
-    "description": "Research, build, and productionize deep learning models including LLMs, computer vision and NLP pipelines.",
+    "industry": "Artificial Intelligence", "experience": "3-6 years", "postedDaysAgo": 1, "logo": "CA", "logoColor": "#6366f1",
+    "description": "Design and deploy advanced AI models including deep learning architectures, Natural Language Processing (NLP), Computer Vision, TensorFlow, and PyTorch.",
     "requiredSkills": [
-      { "id": "deep_learning", "weight": 30 }, { "id": "tensorflow", "weight": 25 },
-      { "id": "pytorch", "weight": 20 }, { "id": "nlp", "weight": 15 }, { "id": "python", "weight": 10 }
+      { "id": "python", "weight": 15 }, { "id": "deep_learning", "weight": 25 },
+      { "id": "tensorflow", "weight": 20 }, { "id": "pytorch", "weight": 20 },
+      { "id": "nlp", "weight": 10 }, { "id": "computer_vision", "weight": 10 }
     ],
-    "tags": ["Deep Learning", "TensorFlow", "PyTorch", "NLP"]
+    "tags": ["Python", "Deep Learning", "TensorFlow", "PyTorch", "NLP", "Computer Vision"]
   },
   {
-    "id": "job_009", "title": "Cloud Solutions Architect", "company": "Apex Infra Networks",
-    "location": "Noida, India", "type": "Full-time", "salary": "₹22 - 38 LPA",
-    "industry": "Enterprise Cloud Architecture", "experience": "5-8 years", "postedDaysAgo": 6, "logo": "AN", "logoColor": "#2563eb",
-    "description": "Design secure, cost-optimized, multi-cloud enterprise ecosystems using IaC (Terraform), AWS and Azure. Lead migrations and architectural reviews.",
+    "id": "job_008", "title": "Cybersecurity Analyst", "company": "SecureNet Global",
+    "location": "Delhi, India", "type": "Full-time", "salary": "₹14 - 24 LPA",
+    "industry": "Cybersecurity", "experience": "2-5 years", "postedDaysAgo": 3, "logo": "SG", "logoColor": "#ef4444",
+    "description": "Protect network infrastructure, perform ethical hacking and penetration tests with Kali Linux, manage SIEM systems and firewalls.",
     "requiredSkills": [
-      { "id": "aws", "weight": 30 }, { "id": "azure", "weight": 25 },
-      { "id": "terraform", "weight": 20 }, { "id": "kubernetes", "weight": 15 }, { "id": "linux", "weight": 10 }
+      { "id": "networking", "weight": 25 }, { "id": "ethical_hacking", "weight": 25 },
+      { "id": "linux", "weight": 20 }, { "id": "siem", "weight": 30 }
     ],
-    "tags": ["AWS", "Azure", "Terraform", "Kubernetes"]
+    "tags": ["Network Security", "Ethical Hacking", "Kali Linux", "SIEM", "Firewalls"]
   },
   {
-    "id": "job_010", "title": "Cybersecurity Analyst", "company": "SecureNet Global",
-    "location": "Delhi, India", "type": "Full-time", "salary": "₹15 - 28 LPA",
-    "industry": "Information Security", "experience": "3-6 years", "postedDaysAgo": 3, "logo": "SG", "logoColor": "#ef4444",
-    "description": "Conduct vulnerability assessments, penetration testing, SOC monitoring, and incident response for enterprise clients.",
+    "id": "job_009", "title": "Cloud Engineer", "company": "CloudScale Systems",
+    "location": "Chennai, India", "type": "Full-time", "salary": "₹16 - 26 LPA",
+    "industry": "Cloud Computing", "experience": "3-5 years", "postedDaysAgo": 5, "logo": "CS", "logoColor": "#0284c7",
+    "description": "Architect and manage public cloud infrastructure across AWS, Azure, and GCP using Docker containers, Kubernetes orchestration, and Linux environments.",
     "requiredSkills": [
-      { "id": "linux", "weight": 30 }, { "id": "python", "weight": 25 },
-      { "id": "problem_solving", "weight": 20 }, { "id": "critical_thinking", "weight": 15 }, { "id": "ci_cd", "weight": 10 }
+      { "id": "aws", "weight": 20 }, { "id": "azure", "weight": 15 },
+      { "id": "gcp", "weight": 15 }, { "id": "docker", "weight": 20 },
+      { "id": "kubernetes", "weight": 15 }, { "id": "linux", "weight": 15 }
     ],
-    "tags": ["Linux", "Security", "Python", "Networking"]
+    "tags": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "Linux"]
+  },
+  {
+    "id": "job_010", "title": "DevOps Engineer", "company": "InfraPipeline Corp",
+    "location": "Bangalore, India", "type": "Full-time", "salary": "₹18 - 28 LPA",
+    "industry": "DevOps & Infrastructure", "experience": "3-6 years", "postedDaysAgo": 2, "logo": "IP", "logoColor": "#f59e0b",
+    "description": "Automate deployment pipelines using Docker, Kubernetes, Jenkins, Git version control, and CI/CD tools on Linux production servers.",
+    "requiredSkills": [
+      { "id": "docker", "weight": 20 }, { "id": "kubernetes", "weight": 20 },
+      { "id": "ci_cd", "weight": 25 }, { "id": "git", "weight": 15 },
+      { "id": "linux", "weight": 20 }
+    ],
+    "tags": ["Docker", "Kubernetes", "Jenkins", "Git", "CI/CD", "Linux"]
+  },
+  {
+    "id": "job_011", "title": "Mobile App Developer", "company": "Appify Mobility",
+    "location": "Bangalore, India", "type": "Full-time", "salary": "₹10 - 18 LPA",
+    "industry": "Mobile Development", "experience": "2-4 years", "postedDaysAgo": 3, "logo": "AM", "logoColor": "#10b981",
+    "description": "Build high-performance mobile applications using Flutter, Kotlin, Java, and Swift with backend integration via Firebase.",
+    "requiredSkills": [
+      { "id": "flutter", "weight": 25 }, { "id": "kotlin", "weight": 20 },
+      { "id": "java", "weight": 15 }, { "id": "swift", "weight": 20 },
+      { "id": "firebase", "weight": 20 }
+    ],
+    "tags": ["Flutter", "Kotlin", "Java", "Swift", "Firebase"]
+  },
+  {
+    "id": "job_012", "title": "UI/UX Designer", "company": "CreativeStudio Design",
+    "location": "Pune, India", "type": "Full-time", "salary": "₹9 - 16 LPA",
+    "industry": "UI/UX Design", "experience": "2-4 years", "postedDaysAgo": 4, "logo": "CD", "logoColor": "#f43f5e",
+    "description": "Design user-centered interfaces using Figma and Adobe XD. Conduct user research, wireframing, and interactive prototyping.",
+    "requiredSkills": [
+      { "id": "figma", "weight": 30 }, { "id": "adobe_xd", "weight": 20 },
+      { "id": "wireframing", "weight": 20 }, { "id": "prototyping", "weight": 15 },
+      { "id": "user_research", "weight": 15 }
+    ],
+    "tags": ["Figma", "Adobe XD", "Wireframing", "Prototyping", "User Research"]
+  },
+  {
+    "id": "job_013", "title": "Database Administrator (DBA)", "company": "DataFortress Enterprise",
+    "location": "Mumbai, India", "type": "Full-time", "salary": "₹15 - 25 LPA",
+    "industry": "Database Administration", "experience": "4-7 years", "postedDaysAgo": 5, "logo": "DE", "logoColor": "#06b6d4",
+    "description": "Manage, secure, and optimize enterprise relational databases including MySQL, PostgreSQL, Oracle, and SQL Server.",
+    "requiredSkills": [
+      { "id": "mysql", "weight": 20 }, { "id": "postgresql", "weight": 20 },
+      { "id": "oracle", "weight": 20 }, { "id": "sql_server", "weight": 20 },
+      { "id": "db_optimization", "weight": 20 }
+    ],
+    "tags": ["MySQL", "PostgreSQL", "Oracle", "SQL Server", "Database Optimization"]
+  },
+  {
+    "id": "job_014", "title": "QA / Test Engineer", "company": "QualityFirst Labs",
+    "location": "Chennai, India", "type": "Full-time", "salary": "₹8 - 14 LPA",
+    "industry": "Software Quality Assurance", "experience": "1-4 years", "postedDaysAgo": 2, "logo": "QL", "logoColor": "#84cc16",
+    "description": "Perform automated and manual testing using Selenium, JUnit, TestNG frameworks, and execute comprehensive API testing.",
+    "requiredSkills": [
+      { "id": "selenium", "weight": 25 }, { "id": "junit", "weight": 20 },
+      { "id": "manual_testing", "weight": 20 }, { "id": "postman", "weight": 20 },
+      { "id": "testng", "weight": 15 }
+    ],
+    "tags": ["Selenium", "JUnit", "Manual Testing", "API Testing", "TestNG"]
+  },
+  {
+    "id": "job_015", "title": "Business Analyst", "company": "Enterprise Insight Solutions",
+    "location": "Gurgaon, India", "type": "Full-time", "salary": "₹12 - 20 LPA",
+    "industry": "Business Analysis & Consulting", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "EI", "logoColor": "#eab308",
+    "description": "Gather business requirements, facilitate Agile development, perform SQL & Excel analysis, build Power BI reports, and communicate with stakeholders.",
+    "requiredSkills": [
+      { "id": "sql_analytics", "weight": 20 }, { "id": "excel", "weight": 20 },
+      { "id": "tableau", "weight": 15 }, { "id": "req_gathering", "weight": 20 },
+      { "id": "jira", "weight": 15 }, { "id": "communication", "weight": 10 }
+    ],
+    "tags": ["SQL", "Excel", "Power BI", "Requirements Gathering", "Agile", "Communication"]
   }
 ]
 
@@ -661,8 +737,96 @@ async def update_skills(body: SkillsUpdateBody, current_user: dict = Depends(get
     
     return {"user": user_without_password(user), "message": "Skills updated successfully"}
 
+SKILL_ALIASES = {
+    "python": ["python", "python3", "py", "django", "flask", "fastapi"],
+    "javascript": ["javascript", "js", "ecmascript", "es6", "es2015", "node"],
+    "typescript": ["typescript", "ts"],
+    "java": ["java", "spring boot", "springboot", "j2ee"],
+    "csharp": ["c#", "csharp", ".net", "dotnet", "asp.net"],
+    "cpp": ["c++", "cpp", "c/c++"],
+    "go": ["golang", "go lang"],
+    "rust": ["rust", "rustlang"],
+    "kotlin": ["kotlin", "kotlin/jvm"],
+    "swift": ["swift", "swiftui"],
+    "php": ["php", "laravel", "symfony"],
+    "ruby": ["ruby", "rails", "ruby on rails"],
+    "oop": ["oop", "object oriented", "object-oriented", "object oriented programming"],
+    "react": ["react", "react.js", "reactjs", "react native", "react-native", "jsx", "next.js", "nextjs"],
+    "vue": ["vue", "vue.js", "vuejs", "nuxt"],
+    "angular": ["angular", "angularjs", "angular.js"],
+    "nextjs": ["next.js", "nextjs", "next js"],
+    "html_css": ["html", "css", "html5", "css3", "html/css", "web design"],
+    "tailwind": ["tailwind", "tailwindcss", "tailwind css"],
+    "bootstrap": ["bootstrap", "bootstrap5", "bootstrap4"],
+    "flutter": ["flutter", "dart", "flutter dev"],
+    "redux": ["redux", "redux toolkit", "vuex", "mobx"],
+    "graphql_client": ["graphql", "apollo", "relay"],
+    "nodejs": ["node", "node.js", "nodejs", "express.js", "express", "npm"],
+    "express": ["express", "express.js"],
+    "django": ["django", "drf", "django rest framework"],
+    "fastapi": ["fastapi", "fast api"],
+    "spring": ["spring", "spring boot", "springboot", "spring mvc"],
+    "dotnet": [".net", "dotnet", "asp.net", "c# web", ".net core"],
+    "graphql_server": ["graphql", "hasura"],
+    "rest_api": ["rest", "restful", "rest api", "api design", "openapi", "swagger", "api testing"],
+    "mysql": ["mysql", "sql", "mariadb"],
+    "postgresql": ["postgres", "postgresql", "psql"],
+    "mongodb": ["mongodb", "mongo", "nosql", "mongoose"],
+    "redis": ["redis", "memcached", "caching"],
+    "firebase": ["firebase", "firestore", "realtime database"],
+    "elasticsearch": ["elasticsearch", "elk", "kibana", "logstash"],
+    "sqlite": ["sqlite", "sqlite3"],
+    "oracle": ["oracle", "oracle db", "pl/sql", "plsql"],
+    "sql_server": ["sql server", "mssql", "microsoft sql server", "t-sql", "tsql"],
+    "db_optimization": ["database optimization", "query optimization", "db optimization", "indexing", "database tuning"],
+    "aws": ["aws", "amazon web services", "s3", "ec2", "lambda", "rds", "cloudfront"],
+    "azure": ["azure", "microsoft azure", "azure devops"],
+    "gcp": ["gcp", "google cloud", "google cloud platform", "bigquery"],
+    "docker": ["docker", "containerization", "container", "dockerfile"],
+    "kubernetes": ["kubernetes", "k8s", "helm", "kubectl"],
+    "ci_cd": ["ci/cd", "cicd", "ci cd", "jenkins", "github actions", "gitlab ci", "devops pipeline"],
+    "terraform": ["terraform", "infrastructure as code", "iac", "pulumi"],
+    "linux": ["linux", "unix", "bash", "shell", "shell scripting", "ubuntu", "centos", "kali linux"],
+    "networking": ["network security", "networking", "firewall", "firewalls", "tcp/ip", "vpn"],
+    "ethical_hacking": ["ethical hacking", "pen testing", "penetration testing", "kali linux", "metasploit"],
+    "siem": ["siem", "firewall", "firewalls", "soc", "incident response", "security monitoring"],
+    "machine_learning": ["machine learning", "ml", "scikit-learn", "sklearn", "supervised learning", "classification", "regression"],
+    "deep_learning": ["deep learning", "dl", "neural network", "cnn", "rnn", "lstm", "transformer"],
+    "data_analysis": ["data analysis", "data analytics", "eda", "exploratory data", "statistical analysis"],
+    "pandas": ["pandas", "numpy", "scipy", "data manipulation"],
+    "tensorflow": ["tensorflow", "tf", "keras"],
+    "pytorch": ["pytorch", "torch"],
+    "sql_analytics": ["sql", "analytics sql", "data querying", "bigquery", "redshift", "snowflake", "sql query"],
+    "tableau": ["tableau", "power bi", "powerbi", "data visualization", "looker"],
+    "nlp": ["nlp", "natural language processing", "text mining", "bert", "gpt", "llm", "spacy"],
+    "computer_vision": ["computer vision", "opencv", "image processing", "yolo"],
+    "excel": ["excel", "microsoft excel", "vlookup", "pivot table", "spreadsheet"],
+    "statistics": ["statistics", "statistical analysis", "hypothesis testing", "probability"],
+    "selenium": ["selenium", "selenium webdriver", "automation testing"],
+    "junit": ["junit", "junit5", "unit testing"],
+    "manual_testing": ["manual testing", "test cases", "bug reporting", "qa testing"],
+    "testng": ["testng", "test framework"],
+    "figma": ["figma", "sketch", "adobe xd", "invision", "prototyping"],
+    "adobe_xd": ["adobe xd", "xd", "figma"],
+    "wireframing": ["wireframing", "wireframe", "wireframes", "balsamiq"],
+    "prototyping": ["prototyping", "prototype", "prototypes", "interactive prototype"],
+    "user_research": ["user research", "ux research", "usability testing", "user interview"],
+    "communication": ["communication", "communication skills", "presentation", "verbal"],
+    "teamwork": ["teamwork", "collaboration", "team player", "cross-functional"],
+    "problem_solving": ["problem solving", "problem-solving", "analytical", "debugging"],
+    "leadership": ["leadership", "team lead", "mentoring", "managing"],
+    "time_management": ["time management", "deadline", "prioritization"],
+    "critical_thinking": ["critical thinking", "decision making", "strategy"],
+    "adaptability": ["adaptability", "flexible", "fast learner", "agile"],
+    "req_gathering": ["requirements gathering", "business analysis", "brd", "user stories", "functional specs"],
+    "git": ["git", "github", "gitlab", "bitbucket", "version control"],
+    "jira": ["jira", "agile", "scrum", "kanban", "confluence"],
+    "postman": ["postman", "insomnia", "api testing"]
+}
+
 def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
-    import json
+    import json, re
+
     try:
         data = json.loads(json_bytes.decode("utf-8", errors="ignore"))
     except Exception:
@@ -671,7 +835,7 @@ def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
     text_content = []
     def extract_strings(obj):
         if isinstance(obj, str):
-            text_content.append(obj.lower())
+            text_content.append(obj)
         elif isinstance(obj, dict):
             for v in obj.values():
                 extract_strings(v)
@@ -680,20 +844,21 @@ def extract_skills_from_json(json_bytes: bytes) -> List[dict]:
                 extract_strings(item)
 
     extract_strings(data)
-    full_text = " ".join(text_content)
-
-    all_catalog_skills = []
-    for cat in INITIAL_SKILLS_DATA.get("categories", []):
-        for sk in cat.get("skills", []):
-            all_catalog_skills.append((sk["id"], sk["name"].lower()))
+    full_text = " ".join(text_content).lower()
+    full_text = re.sub(r'[,;|•\-_/\\]+', ' ', full_text)
+    full_text = re.sub(r'\s+', ' ', full_text).strip()
 
     extracted_user_skills = []
     extracted_ids = set()
-    for sk_id, sk_name in all_catalog_skills:
-        if sk_id in full_text or sk_name in full_text:
-            if sk_id not in extracted_ids:
-                extracted_ids.add(sk_id)
-                extracted_user_skills.append({"id": sk_id, "level": 4})
+
+    for skill_id, aliases in SKILL_ALIASES.items():
+        for alias in aliases:
+            pattern = r'(?<![a-z0-9])' + re.escape(alias) + r'(?![a-z0-9])'
+            if re.search(pattern, full_text):
+                if skill_id not in extracted_ids:
+                    extracted_ids.add(skill_id)
+                    extracted_user_skills.append({"id": skill_id, "level": 4})
+                break
 
     return extracted_user_skills
 
