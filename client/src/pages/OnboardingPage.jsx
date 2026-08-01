@@ -20,7 +20,9 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [info, setInfo] = useState({ targetRole: '', experience: '', education: '' });
   const fileRef = useRef();
+  const hasLoadedProfile = useRef(false);
   const { user, updateUser } = useAuth();
+  console.log("DEBUG RENDER: user profile =", user?.profile);
   const navigate = useNavigate();
   const total = Object.keys(selSkills).length;
 
@@ -30,6 +32,31 @@ export default function OnboardingPage() {
       setActiveCat(r.data.categories[0]?.id);
     });
   }, []);
+
+  useEffect(() => {
+    console.log("OnboardingPage hasLoadedProfile:", hasLoadedProfile.current, "user:", user);
+    if (user?.profile && !hasLoadedProfile.current) {
+      console.log("Pre-populating onboarding fields with profile:", user.profile);
+      setInfo({
+        targetRole: user.profile.targetRole || '',
+        experience: user.profile.experience || '',
+        education: user.profile.education || '',
+      });
+      if (user.profile.skills && user.profile.skills.length > 0) {
+        const skillsMap = {};
+        user.profile.skills.forEach(s => {
+          skillsMap[s.id] = s.level;
+        });
+        console.log("Pre-populating skills map:", skillsMap);
+        setSelSkills(skillsMap);
+      }
+      if (user.profile.resumeFileName) {
+        setUploaded(true);
+        setExtractedInfo(`Existing resume: ${user.profile.resumeOriginalName || user.profile.resumeFileName}`);
+      }
+      hasLoadedProfile.current = true;
+    }
+  }, [user]);
 
   const [extractedInfo, setExtractedInfo] = useState('');
 

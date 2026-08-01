@@ -33,7 +33,6 @@ const OnboardingRoute = ({ children }) => {
   if (!user) return <Navigate to="/login" replace />;
   // Recruiters skip onboarding entirely
   if (user.role === 'recruiter') return <Navigate to="/dashboard" replace />;
-  if (user.profile?.profileComplete) return <Navigate to="/dashboard" replace />;
   return children;
 };
 

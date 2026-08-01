@@ -1531,14 +1531,15 @@ async def create_application(body: ApplicationBody, current_user: dict = Depends
 @app.get("/api/applications")
 async def get_applications(current_user: dict = Depends(get_current_user)):
     d = get_db()
+    apps = []
     if d is not None:
         try:
             cursor = d.applications.find({"userId": current_user["id"]}, {"_id": 0})
             apps = await cursor.to_list(length=100)
-            return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
         except Exception:
             pass
-    apps = [a for a in MEM_APPS if a["userId"] == current_user["id"]]
+    if not apps:
+        apps = [a for a in MEM_APPS if a["userId"] == current_user["id"]]
     return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
 
 @app.get("/api/applications/check/{job_id}")
@@ -1575,39 +1576,28 @@ async def delete_application(app_id: str, current_user: dict = Depends(get_curre
 # ═══════════════════════════════════════════════════════════════
 #  RECRUITER ROUTES
 # ═══════════════════════════════════════════════════════════════
-async def _require_recruiter(current_user: dict):
-    if current_user.get("role") == "recruiter":
-        return
-    d = get_db()
-    user_doc = None
-    if d is not None:
-        try:
-            user_doc = await d.users.find_one({"id": current_user.get("id")})
-        except Exception:
-            pass
-    if user_doc is None:
-        user_doc = next((u for u in MEM_USERS if u["id"] == current_user.get("id")), None)
-    
-    if not user_doc or user_doc.get("role") != "recruiter":
+def _require_recruiter(current_user: dict):
+    if current_user.get("role") != "recruiter":
         raise HTTPException(status_code=403, detail="Recruiter access only")
 
 @app.get("/api/recruiter/applications")
 async def recruiter_get_all_applications(current_user: dict = Depends(get_current_user)):
-    await _require_recruiter(current_user)
+    _require_recruiter(current_user)
     d = get_db()
+    apps = []
     if d is not None:
         try:
             cursor = d.applications.find({}, {"_id": 0})
             apps = await cursor.to_list(length=500)
-            return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
         except Exception:
             pass
-    apps = list(MEM_APPS)
+    if not apps:
+        apps = list(MEM_APPS)
     return {"applications": [clean_mongo_doc(a) for a in apps], "total": len(apps)}
 
 @app.get("/api/recruiter/applicant/{user_id}")
 async def recruiter_get_applicant(user_id: str, current_user: dict = Depends(get_current_user)):
-    await _require_recruiter(current_user)
+    _require_recruiter(current_user)
     d = get_db()
     user = None
     if d is not None:
@@ -1623,7 +1613,7 @@ async def recruiter_get_applicant(user_id: str, current_user: dict = Depends(get
 
 @app.put("/api/recruiter/applications/{app_id}/status")
 async def recruiter_update_status(app_id: str, body: ApplicationStatusBody, current_user: dict = Depends(get_current_user)):
-    await _require_recruiter(current_user)
+    _require_recruiter(current_user)
     valid_statuses = {"applied", "reviewing", "interview", "hired", "rejected"}
     if body.status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
@@ -1673,21 +1663,21 @@ async def recruiter_update_status(app_id: str, body: ApplicationStatusBody, curr
 @app.get("/api/notifications")
 async def get_notifications(current_user: dict = Depends(get_current_user)):
     d = get_db()
+    notifs = []
     if d is not None:
         try:
             cursor = d.notifications.find({"recipientId": current_user["id"]}, {"_id": 0})
             notifs = await cursor.to_list(length=100)
             # Sort newest first
             notifs.sort(key=lambda n: n.get("createdAt", ""), reverse=True)
-            unread_count = sum(1 for n in notifs if not n.get("read"))
-            return {"notifications": [clean_mongo_doc(n) for n in notifs], "unreadCount": unread_count}
         except Exception:
             pass
-    notifs = sorted(
-        [n for n in MEM_NOTIFICATIONS if n["recipientId"] == current_user["id"]],
-        key=lambda n: n.get("createdAt", ""),
-        reverse=True,
-    )
+    if not notifs:
+        notifs = sorted(
+            [n for n in MEM_NOTIFICATIONS if n["recipientId"] == current_user["id"]],
+            key=lambda n: n.get("createdAt", ""),
+            reverse=True,
+        )
     unread_count = sum(1 for n in notifs if not n.get("read"))
     return {"notifications": [clean_mongo_doc(n) for n in notifs], "unreadCount": unread_count}
 

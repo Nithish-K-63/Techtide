@@ -5,11 +5,11 @@ import { useAuth } from '../context/AuthContext';
 
 // Status config
 const STATUS_CFG = {
-  applied:   { label: 'Applied',   color: '#4f46e5', bg: '#eef2ff', emoji: '📝' },
-  reviewing: { label: 'Reviewing', color: '#d97706', bg: '#fffbeb', emoji: '🔍' },
-  interview: { label: 'Interview', color: '#7c3aed', bg: '#f5f3ff', emoji: '🎤' },
-  hired:     { label: 'Hired',     color: '#16a34a', bg: '#ecfdf5', emoji: '🎉' },
-  rejected:  { label: 'Rejected',  color: '#dc2626', bg: '#fff1f2', emoji: '❌' },
+  applied:   { label: 'Applied',   color: '#6366f1', bg: '#eef2ff', emoji: '\uD83D\uDCDD' },
+  reviewing: { label: 'Reviewing', color: '#f59e0b', bg: '#fffbeb', emoji: '\uD83D\uDD0D' },
+  interview: { label: 'Interview', color: '#8b5cf6', bg: '#f5f3ff', emoji: '\uD83C\uDFA4' },
+  hired:     { label: 'Hired',     color: '#10b981', bg: '#ecfdf5', emoji: '\uD83C\uDF89' },
+  rejected:  { label: 'Rejected',  color: '#ef4444', bg: '#fff1f2', emoji: '\u274C' },
 };
 
 // SVG Icon component
@@ -93,8 +93,8 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 400, display: 'flex', justifyContent: 'flex-end' }}>
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.3)', backdropFilter: 'blur(4px)' }} />
-      <div style={{ position: 'relative', width: Math.min(520, window.innerWidth), height: '100%', background: '#fff', boxShadow: '-8px 0 40px rgba(0,0,0,0.12)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }} />
+      <div style={{ position: 'relative', width: Math.min(520, window.innerWidth), height: '100%', background: '#fff', boxShadow: '-8px 0 40px rgba(0,0,0,0.25)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         {/* Panel Header */}
         <div style={{ padding: '20px 24px 16px', background: 'linear-gradient(135deg,#2d2b6e,#4f46e5)', color: '#fff', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -243,18 +243,10 @@ const AppCard = ({ app, onSelect, isSelected }) => {
   const sc = STATUS_CFG[app.status] || STATUS_CFG.applied;
   return (
     <div onClick={() => onSelect(app)}
-      style={{
-        padding: 18,
-        borderRadius: 14,
-        border: `2px solid ${isSelected ? '#4f46e5' : '#e2e8f0'}`,
-        background: isSelected ? 'linear-gradient(135deg, #eef2ff, #f5f3ff)' : '#fff',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease-in-out',
-        boxShadow: isSelected ? '0 8px 24px rgba(79,70,229,0.15)' : '0 4px 12px rgba(0,0,0,0.03)',
-        transform: isSelected ? 'translateY(-2px)' : 'none',
-      }}
-      className="recruiter-app-card"
-    >
+      style={{ padding: 18, borderRadius: 14, border: `2px solid ${isSelected ? '#4f46e5' : '#e2e8f0'}`,
+        background: isSelected ? 'linear-gradient(135deg,#eef2ff,#f5f3ff)' : '#fff',
+        cursor: 'pointer', transition: 'all 0.18s',
+        boxShadow: isSelected ? '0 4px 20px rgba(79,70,229,0.15)' : '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
         <div style={{ width: 40, height: 40, borderRadius: 10,
           background: `linear-gradient(135deg, ${app.logoColor || '#6366f1'}, ${(app.logoColor || '#6366f1')}88)`,
@@ -275,8 +267,8 @@ const AppCard = ({ app, onSelect, isSelected }) => {
           <p style={{ fontSize: 11, color: '#94a3b8' }}>{new Date(app.appliedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
         </div>
         {app.counselingNote && (
-          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', fontWeight: 700 }}>
-            💬 Note
+          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 10, background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontWeight: 700 }}>
+            \uD83D\uDCAC Note
           </span>
         )}
       </div>
@@ -349,29 +341,29 @@ export default function RecruiterDashboard() {
   }).sort((a, b) => new Date(b.appliedAt) - new Date(a.appliedAt));
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ width: 48, height: 48, border: '4px solid #4f46e5', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-        <p style={{ color: '#64748b', fontWeight: 500, fontSize: 14 }}>Loading Recruiter Dashboard...</p>
+        <p style={{ color: '#94a3b8', fontWeight: 500, fontSize: 14 }}>Loading Recruiter Dashboard...</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f8', fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', fontFamily: "'Inter', system-ui, sans-serif" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
       `}</style>
 
       {/* Navigation */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(15,23,42,0.96)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#2d2b6e,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>⚡</div>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>\u26A1</div>
           <div>
-            <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>CareerPath</span>
-            <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: 'linear-gradient(135deg,#2d2b6e,#4f46e5)', color: '#fff' }}>RECRUITER</span>
+            <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px' }}>CareerPath</span>
+            <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 20, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff' }}>RECRUITER</span>
           </div>
         </div>
 
@@ -379,17 +371,17 @@ export default function RecruiterDashboard() {
           {/* Bell */}
           <div style={{ position: 'relative' }}>
             <button onClick={handleBellClick}
-              style={{ position: 'relative', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '7px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}>
+              style={{ position: 'relative', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '7px 9px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#94a3b8' }}>
               <Ic n="bell" size={17} />
               {unreadCount > 0 && (
-                <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: '#fff', borderRadius: '50%', fontSize: 9, fontWeight: 800, minWidth: 17, height: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', border: '2px solid #fff' }}>
+                <span style={{ position: 'absolute', top: -5, right: -5, background: '#ef4444', color: '#fff', borderRadius: '50%', fontSize: 9, fontWeight: 800, minWidth: 17, height: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', border: '2px solid #0f172a' }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
             {bellOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 44, width: 340, maxHeight: 380, overflowY: 'auto', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.1)', zIndex: 300 }}>
-                <div style={{ padding: '13px 16px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, fontSize: 13, color: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', right: 0, top: 44, width: 340, maxHeight: 380, overflowY: 'auto', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.5)', zIndex: 300 }}>
+                <div style={{ padding: '13px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', fontWeight: 700, fontSize: 13, color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   Notifications
                   <button onClick={() => setBellOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}>
                     <Ic n="close" size={14} />
@@ -398,11 +390,11 @@ export default function RecruiterDashboard() {
                 {notifications.length === 0 ? (
                   <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: 13 }}>No notifications yet</div>
                 ) : notifications.map(n => (
-                  <div key={n.id} style={{ padding: '11px 16px', borderBottom: '1px solid #f1f5f9', background: n.read ? 'transparent' : '#f0f6ff', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 15, flexShrink: 0 }}>{n.type === 'new_application' ? '🔔' : '📋'}</span>
+                  <div key={n.id} style={{ padding: '11px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', background: n.read ? 'transparent' : 'rgba(99,102,241,0.09)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 15, flexShrink: 0 }}>{n.type === 'new_application' ? '\uD83D\uDD14' : '\uD83D\uDCCB'}</span>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 12, color: '#334155', lineHeight: 1.5 }}>{n.message}</p>
-                      <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{new Date(n.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</p>
+                      <p style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>{n.message}</p>
+                      <p style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{new Date(n.createdAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}</p>
                     </div>
                     {!n.read && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6366f1', flexShrink: 0, marginTop: 4 }} />}
                   </div>
@@ -411,12 +403,12 @@ export default function RecruiterDashboard() {
             )}
           </div>
 
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#2d2b6e,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 13 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 13 }}>
             {(user?.fullName || user?.username || 'R')[0].toUpperCase()}
           </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{user?.fullName || user?.username}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>{user?.fullName || user?.username}</span>
           <button onClick={() => { logout(); navigate('/login'); }}
-            style={{ padding: '6px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+            style={{ padding: '6px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
             Sign Out
           </button>
         </div>
@@ -426,8 +418,8 @@ export default function RecruiterDashboard() {
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px' }}>
         {/* Hero */}
         <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.5px', marginBottom: 4 }}>
-            🧑‍💼 Recruiter Dashboard
+          <h1 style={{ fontSize: 30, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 4 }}>
+            \uD83E\uDDD1\u200D\uD83D\uDCBC Recruiter Dashboard
           </h1>
           <p style={{ color: '#64748b', fontSize: 14 }}>Monitor all applications, view candidate profiles, update status, and add counseling notes.</p>
         </div>
@@ -435,14 +427,14 @@ export default function RecruiterDashboard() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 12, marginBottom: 28 }}>
           {[
-            { label: 'Total Applications', value: total,           color: '#4f46e5', bg: '#fff', emoji: '📋' },
-            { label: 'New',                value: counts.applied,  color: '#4f46e5', bg: '#fff', emoji: '📝' },
-            { label: 'Reviewing',          value: counts.reviewing,color: '#d97706', bg: '#fff', emoji: '🔍' },
-            { label: 'Interviews',         value: counts.interview,color: '#7c3aed', bg: '#fff', emoji: '🎤' },
-            { label: 'Hired',              value: counts.hired,    color: '#16a34a', bg: '#fff', emoji: '🎉' },
-            { label: 'Rejected',           value: counts.rejected, color: '#dc2626', bg: '#fff', emoji: '❌' },
+            { label: 'Total Applications', value: total,           color: '#6366f1', bg: 'rgba(99,102,241,0.12)', emoji: '\uD83D\uDCCB' },
+            { label: 'New',                value: counts.applied,  color: '#6366f1', bg: 'rgba(99,102,241,0.07)', emoji: '\uD83D\uDCDD' },
+            { label: 'Reviewing',          value: counts.reviewing,color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  emoji: '\uD83D\uDD0D' },
+            { label: 'Interviews',         value: counts.interview,color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', emoji: '\uD83C\uDFA4' },
+            { label: 'Hired',              value: counts.hired,    color: '#10b981', bg: 'rgba(16,185,129,0.1)', emoji: '\uD83C\uDF89' },
+            { label: 'Rejected',           value: counts.rejected, color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  emoji: '\u274C' },
           ].map(s => (
-            <div key={s.label} style={{ padding: '16px 18px', borderRadius: 14, background: s.bg, border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01)' }}>
+            <div key={s.label} style={{ padding: '16px 18px', borderRadius: 14, background: s.bg, border: `1px solid ${s.color}22` }}>
               <div style={{ fontSize: 18, marginBottom: 6 }}>{s.emoji}</div>
               <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: 600 }}>{s.label}</div>
@@ -451,17 +443,17 @@ export default function RecruiterDashboard() {
         </div>
 
         {/* Filter bar */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 20, padding: '12px 16px', borderRadius: 14, background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 20, padding: '12px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
             <div style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
               <Ic n="search" size={14} />
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search candidates, jobs, companies..."
-              style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }} />
+              style={{ width: '100%', padding: '8px 12px 8px 36px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }} />
           </div>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            style={{ padding: '8px 14px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', color: '#0f172a', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ padding: '8px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: '#1e293b', color: '#e2e8f0', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             <option value="all">All Statuses</option>
             {Object.entries(STATUS_CFG).map(([k, v]) => <option key={k} value={k}>{v.emoji} {v.label}</option>)}
           </select>
@@ -470,9 +462,9 @@ export default function RecruiterDashboard() {
 
         {/* Application Cards */}
         {filtered.length === 0 ? (
-          <div style={{ padding: '56px 24px', textAlign: 'center', borderRadius: 16, background: '#fff', border: '1px dashed #cbd5e1', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
-            <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
-            <h3 style={{ color: '#0f172a', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
+          <div style={{ padding: '56px 24px', textAlign: 'center', borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: 40, marginBottom: 14 }}>\uD83D\uDCCB</div>
+            <h3 style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
               {applications.length === 0 ? 'No Applications Yet' : 'No Results Found'}
             </h3>
             <p style={{ color: '#64748b', fontSize: 14 }}>
