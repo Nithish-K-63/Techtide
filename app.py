@@ -1812,7 +1812,8 @@ _RESUME_MEDIA = {
     ".tif":  "image/tiff",
 }
 
-@app.api_route("/api/resume/{filename}", methods=["GET", "HEAD"])
+@app.get("/api/resume/{filename}")
+@app.head("/api/resume/{filename}")
 async def serve_resume_file(filename: str):
     """Serve an uploaded resume/image file directly for viewing in the browser."""
     if not _re.match(r'^resume_\d+\.[a-zA-Z]+$', filename):
