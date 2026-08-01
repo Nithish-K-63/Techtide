@@ -91,7 +91,7 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   };
 
   const resumeUrl = profile?.profile?.resumeFileName
-    ? `/uploads/${profile.profile.resumeFileName}`
+    ? `/api/resume/${profile.profile.resumeFileName}`
     : null;
 
   const sc = STATUS_CFG[status] || STATUS_CFG.applied;

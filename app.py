@@ -943,6 +943,72 @@ class ResumeParser:
 
         def _process_container(container, page_num: int):
             """Recursively extract LTTextBox blocks from a layout container."""
+            # Group characters if the figure contains raw characters without textboxes
+            has_textbox = any(isinstance(element, LTTextBox) for element in container)
+            if not has_textbox and isinstance(container, LTFigure):
+                chars = []
+                def collect_chars(c):
+                    for el in c:
+                        if isinstance(el, LTChar):
+                            chars.append(el)
+                        elif hasattr(el, "__iter__"):
+                            collect_chars(el)
+                collect_chars(container)
+                if chars:
+                    lines_dict = {}
+                    for char in chars:
+                        text = char.get_text()
+                        if not text.strip():
+                            continue
+                        found_group = False
+                        for group_y0 in lines_dict:
+                            if abs(char.y0 - group_y0) < 3.0:
+                                lines_dict[group_y0].append(char)
+                                found_group = True
+                                break
+                        if not found_group:
+                            lines_dict[char.y0] = [char]
+
+                    for group_y0, group_chars in lines_dict.items():
+                        sorted_chars = sorted(group_chars, key=lambda c: c.x0)
+                        line_parts = []
+                        for idx, char in enumerate(sorted_chars):
+                            if idx > 0:
+                                prev_char = sorted_chars[idx - 1]
+                                gap = char.x0 - prev_char.x1
+                                if gap > 1.8:
+                                    line_parts.append(" ")
+                            line_parts.append(char.get_text())
+                        line_text = "".join(line_parts).strip()
+
+                        if not line_text:
+                            continue
+                        sizes = [c.size for c in sorted_chars]
+                        fontsize = sum(sizes) / len(sizes) if sizes else 10.0
+                        fontsizes.append(fontsize)
+                        bold = False
+                        fname = ""
+                        for c in sorted_chars:
+                            fn = c.fontname.lower()
+                            if any(w in fn for w in ["bold", "heavy", "black", "demi"]):
+                                bold = True
+                            if not fname:
+                                fname = c.fontname
+
+                        x0 = min(c.x0 for c in sorted_chars)
+                        y0 = min(c.y0 for c in sorted_chars)
+                        x1 = max(c.x1 for c in sorted_chars)
+                        y1 = max(c.y1 for c in sorted_chars)
+
+                        blocks.append(TextBlock(
+                            text=line_text,
+                            x0=x0, y0=y0, x1=x1, y1=y1,
+                            fontsize=round(fontsize, 2),
+                            fontname=("Bold:" + fname) if bold else fname,
+                            page=page_num,
+                        ))
+                    return
+
             for element in container:
                 if isinstance(element, LTTextBox):
                     text = element.get_text().strip()
@@ -1728,6 +1794,35 @@ async def mark_notifications_read(body: NotificationMarkBody, current_user: dict
                 if not body.ids or n["id"] in body.ids:
                     n["read"] = True
     return {"message": "Marked as read"}
+
+# ═══════════════════════════════════════════════════════════════
+#  RESUME FILE SERVING  (must be registered before the SPA catch-all)
+# ═══════════════════════════════════════════════════════════════
+import re as _re
+
+_RESUME_MEDIA = {
+    ".pdf":  "application/pdf",
+    ".json": "application/json",
+    ".png":  "image/png",
+    ".jpg":  "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".bmp":  "image/bmp",
+    ".tiff": "image/tiff",
+    ".tif":  "image/tiff",
+}
+
+@app.get("/api/resume/{filename}")
+async def serve_resume_file(filename: str, current_user: dict = Depends(get_current_user)):
+    """Serve an uploaded resume/image file. Accessible to any authenticated user."""
+    if not _re.match(r'^resume_\d+\.[a-zA-Z]+$', filename):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    filepath = UPLOADS_DIR / filename
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="Resume file not found")
+    ext = Path(filename).suffix.lower()
+    media_type = _RESUME_MEDIA.get(ext, "application/octet-stream")
+    return FileResponse(str(filepath), media_type=media_type)
 
 # ═══════════════════════════════════════════════════════════════
 #  SERVE UPLOADS & REACT FRONTEND
