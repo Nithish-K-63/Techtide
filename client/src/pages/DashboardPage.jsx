@@ -534,7 +534,7 @@ const ApplicationsView = ({ applications, onWithdraw }) => {
 //  MAIN DASHBOARD
 // ═══════════════════════════════════════════════════════════════════
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState('home');
   const [jobs, setJobs] = useState([]);
@@ -557,11 +557,13 @@ export default function DashboardPage() {
       axios.get('/api/jobs'),
       axios.get('/api/skills'),
       axios.get('/api/applications'),
-    ]).then(([jRes, sRes, aRes]) => {
+      axios.get('/api/profile'),
+    ]).then(([jRes, sRes, aRes, pRes]) => {
       setJobs(jRes.data.jobs);
       setCats(sRes.data.categories);
       setApplications(aRes.data.applications);
       setSelectedJob(jRes.data.jobs[0] || null);
+      if (pRes.data.user) updateUser(pRes.data.user);
     }).finally(() => setLoading(false));
   }, []);
 

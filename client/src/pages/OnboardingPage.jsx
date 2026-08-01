@@ -68,7 +68,19 @@ export default function OnboardingPage() {
   const handleFinish = async () => {
     setSaving(true);
     try {
-      const skills = Object.entries(selSkills).map(([id, level]) => ({ id, level }));
+      // Fetch the current profile to get skills already saved from resume upload
+      let existingSkills = [];
+      try {
+        const profileRes = await axios.get('/api/profile');
+        existingSkills = profileRes.data.user?.profile?.skills || [];
+      } catch {}
+
+      // Merge resume-extracted skills + manually selected skills (manual overrides level)
+      const mergedMap = {};
+      existingSkills.forEach(s => { mergedMap[s.id] = s.level; });
+      Object.entries(selSkills).forEach(([id, level]) => { mergedMap[id] = level; });
+      const skills = Object.entries(mergedMap).map(([id, level]) => ({ id, level }));
+
       const res = await axios.put('/api/profile/skills', { skills, ...info });
       updateUser(res.data.user);
       navigate('/dashboard');
