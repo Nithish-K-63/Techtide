@@ -169,8 +169,8 @@ INITIAL_JOBS_DATA = [
   {
     "id": "job_001", "title": "Full Stack Developer", "company": "TechNova Solutions",
     "location": "Bangalore, India", "type": "Full-time", "salary": "₹12 - 18 LPA",
-    "industry": "Technology", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "TN", "logoColor": "#6366f1",
-    "description": "Build scalable web applications using modern tech stack. Work with cross-functional teams on exciting products.",
+    "industry": "Software Development", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "TN", "logoColor": "#6366f1",
+    "description": "Build scalable full-stack web applications with React, Node.js and MongoDB. Collaborate with cross-functional teams on new product features.",
     "requiredSkills": [
       { "id": "react", "weight": 25 }, { "id": "nodejs", "weight": 25 },
       { "id": "javascript", "weight": 20 }, { "id": "mongodb", "weight": 15 },
@@ -181,8 +181,8 @@ INITIAL_JOBS_DATA = [
   {
     "id": "job_002", "title": "Data Scientist", "company": "AnalytiQ Corp",
     "location": "Hyderabad, India", "type": "Full-time", "salary": "₹15 - 25 LPA",
-    "industry": "Data & Analytics", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "AQ", "logoColor": "#8b5cf6",
-    "description": "Develop ML models and data pipelines to drive business insights. Work with petabytes of data.",
+    "industry": "Data Science & Analytics", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "AQ", "logoColor": "#8b5cf6",
+    "description": "Develop and deploy machine learning models, build data pipelines, and derive business insights from large datasets.",
     "requiredSkills": [
       { "id": "machine_learning", "weight": 30 }, { "id": "python", "weight": 25 },
       { "id": "data_analysis", "weight": 20 }, { "id": "pandas", "weight": 15 },
@@ -191,21 +191,21 @@ INITIAL_JOBS_DATA = [
     "tags": ["Python", "ML", "Data Analysis", "Pandas"]
   },
   {
-    "id": "job_003", "title": "Frontend Developer", "company": "PixelCraft Studios",
+    "id": "job_003", "title": "UI/UX Frontend Developer", "company": "PixelCraft Studios",
     "location": "Pune, India", "type": "Full-time", "salary": "₹8 - 15 LPA",
-    "industry": "Technology", "experience": "1-3 years", "postedDaysAgo": 3, "logo": "PC", "logoColor": "#ec4899",
-    "description": "Create stunning user interfaces with React and modern CSS. Work closely with designers.",
+    "industry": "Digital Design & Frontend", "experience": "1-3 years", "postedDaysAgo": 3, "logo": "PC", "logoColor": "#ec4899",
+    "description": "Design and build pixel-perfect, accessible, and highly responsive user interfaces. Bridge the gap between design and development.",
     "requiredSkills": [
-      { "id": "react", "weight": 35 }, { "id": "javascript", "weight": 25 },
-      { "id": "html_css", "weight": 20 }, { "id": "tailwind", "weight": 10 }, { "id": "figma", "weight": 10 }
+      { "id": "react", "weight": 30 }, { "id": "javascript", "weight": 25 },
+      { "id": "html_css", "weight": 20 }, { "id": "figma", "weight": 15 }, { "id": "tailwind", "weight": 10 }
     ],
-    "tags": ["React", "JavaScript", "CSS", "Figma"]
+    "tags": ["React", "JavaScript", "Figma", "CSS"]
   },
   {
-    "id": "job_004", "title": "DevOps Engineer", "company": "CloudScale Inc",
+    "id": "job_004", "title": "DevOps / Platform Engineer", "company": "CloudScale Inc",
     "location": "Chennai, India", "type": "Full-time", "salary": "₹18 - 28 LPA",
-    "industry": "Cloud Computing", "experience": "4-6 years", "postedDaysAgo": 5, "logo": "CS", "logoColor": "#3b82f6",
-    "description": "Design and manage CI/CD pipelines, cloud infrastructure on AWS/GCP.",
+    "industry": "Cloud & Infrastructure", "experience": "4-6 years", "postedDaysAgo": 5, "logo": "CS", "logoColor": "#3b82f6",
+    "description": "Own the cloud infrastructure, manage CI/CD pipelines, and ensure 99.9% uptime of services running on AWS/GCP.",
     "requiredSkills": [
       { "id": "aws", "weight": 30 }, { "id": "docker", "weight": 25 },
       { "id": "kubernetes", "weight": 20 }, { "id": "ci_cd", "weight": 15 }, { "id": "linux", "weight": 10 }
@@ -213,10 +213,10 @@ INITIAL_JOBS_DATA = [
     "tags": ["AWS", "Docker", "Kubernetes", "CI/CD"]
   },
   {
-    "id": "job_005", "title": "Backend Engineer (Python)", "company": "Zephyr Technologies",
+    "id": "job_005", "title": "Backend API Engineer (Python)", "company": "Zephyr Technologies",
     "location": "Mumbai, India", "type": "Full-time", "salary": "₹14 - 22 LPA",
-    "industry": "Technology", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "ZT", "logoColor": "#10b981",
-    "description": "Build high-performance APIs and microservices using Python/FastAPI/Django.",
+    "industry": "API & Microservices", "experience": "2-5 years", "postedDaysAgo": 1, "logo": "ZT", "logoColor": "#10b981",
+    "description": "Build high-throughput APIs and microservices using Python (FastAPI/Django). Design scalable database schemas.",
     "requiredSkills": [
       { "id": "python", "weight": 35 }, { "id": "fastapi", "weight": 25 },
       { "id": "postgresql", "weight": 20 }, { "id": "redis", "weight": 10 }, { "id": "docker", "weight": 10 }
@@ -224,32 +224,32 @@ INITIAL_JOBS_DATA = [
     "tags": ["Python", "FastAPI", "PostgreSQL", "Redis"]
   },
   {
-    "id": "job_006", "title": "Mobile App Developer", "company": "Appify Labs",
+    "id": "job_006", "title": "Mobile App Developer (React Native)", "company": "Appify Labs",
     "location": "Bangalore, India", "type": "Full-time", "salary": "₹10 - 18 LPA",
-    "industry": "Mobile Apps", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "AL", "logoColor": "#f59e0b",
-    "description": "Develop cross-platform and native mobile applications using Kotlin, Swift, or React Native.",
+    "industry": "Mobile Technology", "experience": "2-4 years", "postedDaysAgo": 2, "logo": "AL", "logoColor": "#f59e0b",
+    "description": "Build cross-platform iOS and Android applications using React Native and Kotlin. Integrate backend APIs and push notifications.",
     "requiredSkills": [
-      { "id": "kotlin", "weight": 30 }, { "id": "swift", "weight": 25 },
-      { "id": "javascript", "weight": 20 }, { "id": "rest_api", "weight": 15 }, { "id": "git", "weight": 10 }
+      { "id": "kotlin", "weight": 30 }, { "id": "javascript", "weight": 25 },
+      { "id": "react", "weight": 20 }, { "id": "rest_api", "weight": 15 }, { "id": "git", "weight": 10 }
     ],
-    "tags": ["Kotlin", "Swift", "React Native", "Mobile"]
+    "tags": ["Kotlin", "React Native", "JavaScript", "Mobile"]
   },
   {
     "id": "job_007", "title": "Data Engineer", "company": "BigData Matrix",
     "location": "Hyderabad, India", "type": "Full-time", "salary": "₹16 - 26 LPA",
-    "industry": "Data Engineering", "experience": "3-6 years", "postedDaysAgo": 4, "logo": "BM", "logoColor": "#06b6d4",
-    "description": "Construct large-scale data warehouses, ETL pipelines, and real-time streaming architectures.",
+    "industry": "Big Data & ETL", "experience": "3-6 years", "postedDaysAgo": 4, "logo": "BM", "logoColor": "#06b6d4",
+    "description": "Design and maintain large-scale ETL pipelines, data warehouses, and streaming architectures for analytics teams.",
     "requiredSkills": [
       { "id": "python", "weight": 30 }, { "id": "postgresql", "weight": 25 },
-      { "id": "mysql", "weight": 20 }, { "id": "aws", "weight": 15 }, { "id": "sql_analytics", "weight": 10 }
+      { "id": "mysql", "weight": 15 }, { "id": "aws", "weight": 15 }, { "id": "sql_analytics", "weight": 15 }
     ],
-    "tags": ["Python", "PostgreSQL", "ETL", "SQL"]
+    "tags": ["Python", "PostgreSQL", "ETL", "SQL Analytics"]
   },
   {
-    "id": "job_008", "title": "AI/ML Engineer", "company": "Cognitive AI Systems",
+    "id": "job_008", "title": "AI / Machine Learning Engineer", "company": "Cognitive AI Systems",
     "location": "Gurgaon, India", "type": "Full-time", "salary": "₹20 - 35 LPA",
-    "industry": "Artificial Intelligence", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "CA", "logoColor": "#8b5cf6",
-    "description": "Deploy deep learning and generative AI models for real-world enterprise automation.",
+    "industry": "Artificial Intelligence", "experience": "3-5 years", "postedDaysAgo": 1, "logo": "CA", "logoColor": "#a855f7",
+    "description": "Research, build, and productionize deep learning models including LLMs, computer vision and NLP pipelines.",
     "requiredSkills": [
       { "id": "deep_learning", "weight": 30 }, { "id": "tensorflow", "weight": 25 },
       { "id": "pytorch", "weight": 20 }, { "id": "nlp", "weight": 15 }, { "id": "python", "weight": 10 }
@@ -257,24 +257,24 @@ INITIAL_JOBS_DATA = [
     "tags": ["Deep Learning", "TensorFlow", "PyTorch", "NLP"]
   },
   {
-    "id": "job_009", "title": "Cloud Architect", "company": "Apex Infra Networks",
+    "id": "job_009", "title": "Cloud Solutions Architect", "company": "Apex Infra Networks",
     "location": "Noida, India", "type": "Full-time", "salary": "₹22 - 38 LPA",
-    "industry": "Cloud Architecture", "experience": "5-8 years", "postedDaysAgo": 6, "logo": "AI", "logoColor": "#3b82f6",
-    "description": "Architect secure, multi-cloud enterprise ecosystems with IaC using Terraform and AWS/Azure.",
+    "industry": "Enterprise Cloud Architecture", "experience": "5-8 years", "postedDaysAgo": 6, "logo": "AN", "logoColor": "#2563eb",
+    "description": "Design secure, cost-optimized, multi-cloud enterprise ecosystems using IaC (Terraform), AWS and Azure. Lead migrations and architectural reviews.",
     "requiredSkills": [
       { "id": "aws", "weight": 30 }, { "id": "azure", "weight": 25 },
       { "id": "terraform", "weight": 20 }, { "id": "kubernetes", "weight": 15 }, { "id": "linux", "weight": 10 }
     ],
-    "tags": ["AWS", "Azure", "Terraform", "Cloud"]
+    "tags": ["AWS", "Azure", "Terraform", "Kubernetes"]
   },
   {
-    "id": "job_010", "title": "Cybersecurity Specialist", "company": "SecureNet Global",
+    "id": "job_010", "title": "Cybersecurity Analyst", "company": "SecureNet Global",
     "location": "Delhi, India", "type": "Full-time", "salary": "₹15 - 28 LPA",
-    "industry": "Cybersecurity", "experience": "3-6 years", "postedDaysAgo": 3, "logo": "SG", "logoColor": "#ef4444",
-    "description": "Perform vulnerability assessments, pen testing, network security monitoring and Incident response.",
+    "industry": "Information Security", "experience": "3-6 years", "postedDaysAgo": 3, "logo": "SG", "logoColor": "#ef4444",
+    "description": "Conduct vulnerability assessments, penetration testing, SOC monitoring, and incident response for enterprise clients.",
     "requiredSkills": [
-      { "id": "linux", "weight": 35 }, { "id": "python", "weight": 25 },
-      { "id": "ci_cd", "weight": 20 }, { "id": "problem_solving", "weight": 10 }, { "id": "critical_thinking", "weight": 10 }
+      { "id": "linux", "weight": 30 }, { "id": "python", "weight": 25 },
+      { "id": "problem_solving", "weight": 20 }, { "id": "critical_thinking", "weight": 15 }, { "id": "ci_cd", "weight": 10 }
     ],
     "tags": ["Linux", "Security", "Python", "Networking"]
   }
