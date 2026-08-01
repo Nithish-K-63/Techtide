@@ -236,11 +236,23 @@ export default function OnboardingPage() {
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 28 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 28 }}>
               <button onClick={() => setStep(1)} className="btn-ghost" style={{ padding: '11px 22px' }}>← Back</button>
-              <button onClick={() => setStep(3)} className="btn-navy" style={{ padding: '11px 28px' }}>
-                {uploaded ? 'Next: Select Skills →' : 'Skip & Select Skills →'}
-              </button>
+              
+              {uploaded ? (
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setStep(3)} className="btn-ghost" style={{ padding: '11px 16px', fontSize: 13 }}>
+                    Optional: Edit Skills
+                  </button>
+                  <button onClick={handleFinish} disabled={saving} className="btn-navy" style={{ padding: '11px 28px' }}>
+                    {saving ? 'Matching...' : 'Finish & Match Jobs →'}
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => setStep(3)} className="btn-navy" style={{ padding: '11px 28px' }}>
+                  Select Skills Manually →
+                </button>
+              )}
             </div>
           </div>
         )}
