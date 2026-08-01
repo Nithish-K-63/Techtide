@@ -1,126 +1,89 @@
-# CareerPath — Skill-Based Job Matching Portal
+# 🚀 CareerPath – Skill-Based Job Matching Portal
 
-## Project Overview
+CareerPath is an intelligent **Skill-Based Job Matching and Career Guidance Platform** that connects job seekers with relevant employment opportunities based on their technical and professional skills rather than traditional keyword-based searching.
 
-**CareerPath** is an intelligent, skill-based career guidance and job matching platform designed to connect job seekers with relevant employment opportunities based on their competencies rather than traditional keyword-based searches. By leveraging a skill-centric recommendation system, the platform identifies the most suitable job openings that align with a user's technical expertise and professional capabilities, enabling more accurate and meaningful career opportunities.
-
-The application follows a modern full-stack architecture, featuring a **React.js** frontend for an interactive user experience, a **FastAPI** backend for high-performance API services, and **MongoDB Atlas** as the cloud-based NoSQL database for scalable and flexible data management.
+The platform analyzes a user's skill set, compares it with employer requirements, calculates a matching percentage, and recommends the most suitable job opportunities. This enables users to discover careers aligned with their competencies while helping employers identify qualified candidates more efficiently.
 
 ---
 
-# System Workflow
+# 📌 Table of Contents
 
-The CareerPath platform follows a structured workflow consisting of four major stages that ensure a seamless user experience from registration to job application tracking.
-
-## 1. User Authentication and Account Management
-
-The platform provides a secure authentication mechanism to protect user data and maintain personalized sessions.
-
-### User Registration
-
-* New users create an account by providing their basic information, including name, email address, and password.
-* Passwords are securely encrypted using the **bcrypt hashing algorithm** before being stored in the database.
-* User credentials are maintained in MongoDB Atlas for secure and scalable storage.
-
-### User Login
-
-* Existing users authenticate using their registered email and password.
-* The backend validates the encrypted password and generates a **JSON Web Token (JWT)** upon successful authentication.
-* The JWT is securely stored on the client side and is used to authorize subsequent API requests, ensuring secure session management.
+* [Project Overview](#-project-overview)
+* [Features](#-features)
+* [Technology Stack](#-technology-stack)
+* [System Workflow](#-system-workflow)
+* [System Flowchart](#-system-flowchart)
+* [REST API Endpoints](#-rest-api-endpoints)
+* [Project Structure](#-project-structure)
+* [Installation](#-installation)
+* [Running the Project](#-running-the-project)
+* [Future Enhancements](#-future-enhancements)
+* [Contributing](#-contributing)
+* [License](#-license)
 
 ---
 
-## 2. User Profile and Skill Management
+# 📖 Project Overview
 
-After successful authentication, users are directed to their personalized dashboard, where they can build and maintain their professional profile.
+CareerPath is a modern full-stack web application that bridges the gap between job seekers and employers using an intelligent skill-based recommendation system.
 
-### Skill Selection
+Unlike traditional job portals that rely primarily on keyword searches, CareerPath focuses on the user's actual skills and competencies. By comparing user profiles with employer-defined job requirements, the platform generates personalized job recommendations ranked by skill match percentage.
 
-Users can select skills from multiple predefined categories, including:
-
-* Programming Languages
-* Frontend Development
-* Backend Development
-* Database Technologies
-* Cloud Computing & DevOps
-* Data Science & Artificial Intelligence
-* Mobile Development
-* Soft Skills
-
-### Profile Management
-
-* Selected skills are stored as part of the user's profile.
-* Profile information is synchronized with the backend through RESTful APIs.
-* Users can update their skills at any time, ensuring that recommendations remain accurate and relevant.
+The application provides a seamless experience from user registration to job application tracking while maintaining secure authentication and efficient data management.
 
 ---
 
-## 3. Intelligent Skill-Based Job Matching Engine
+# ✨ Features
 
-The recommendation engine serves as the core component of the platform by matching user skills with employer requirements.
+## 👤 User Authentication
 
-### Job Repository
-
-* Every job posting stored in the database contains detailed information, including:
-
-  * Job Title
-  * Company Name
-  * Job Description
-  * Required Skills
-  * Experience Level
-  * Salary Range
-  * Employment Type
-  * Location
-
-### Skill Matching Algorithm
-
-When users access the **Recommended Jobs** section:
-
-1. The backend retrieves the user's skill profile.
-2. It compares the user's skills against the required skills of every active job posting.
-3. A matching score is calculated based on the percentage of required skills possessed by the user.
-
-For example:
-
-* Required Skills: **Python, React, MongoDB, Git, REST API**
-* User Skills: **Python, React, MongoDB, Git**
-
-**Matching Score = (4 ÷ 5) × 100 = 80%**
-
-### Recommendation Generation
-
-* Jobs are ranked according to their matching percentage.
-* The highest-ranked opportunities are displayed first.
-* This approach minimizes irrelevant job suggestions and provides users with highly personalized career recommendations.
+* Secure user registration
+* Password encryption using **bcrypt**
+* JWT-based authentication
+* Protected API endpoints
+* Persistent user sessions
 
 ---
 
-## 4. Job Application and Progress Tracking
+## 👨‍💻 User Profile Management
 
-The platform enables users to apply for suitable positions and monitor their application progress.
+* Personalized dashboard
+* Edit profile information
+* Add or update skills
+* Categorized skill selection
+* Real-time profile synchronization
 
-### Job Details
+---
 
-Before applying, users can view comprehensive information such as:
+## 🎯 Intelligent Skill-Based Job Matching
 
-* Company Profile
-* Job Description
-* Required Skills
-* Salary Range
-* Work Location
-* Employment Type
-* Experience Requirements
+* Percentage-based matching algorithm
+* Personalized recommendations
+* Ranked job listings
+* Fast recommendation engine
+* Relevant job discovery
 
-### Job Application
+---
 
-* Users can apply directly through the platform by selecting the **Apply** option.
-* The system records the application by linking the user's profile with the corresponding job posting in the database.
+## 💼 Job Management
 
-### Application Tracking
+* View detailed job descriptions
+* Company information
+* Salary range
+* Required skills
+* Employment type
+* Location details
 
-The dashboard includes a dedicated **Applications** section where users can monitor the status of every submitted application.
+---
 
-Possible application statuses include:
+## 📄 Job Applications
+
+* One-click application
+* Track application history
+* View application status
+* Dashboard integration
+
+Application statuses include:
 
 * Pending
 * Under Review
@@ -129,112 +92,355 @@ Possible application statuses include:
 * Selected
 * Rejected
 
-This centralized tracking system enables users to stay informed about their recruitment progress throughout the hiring process.
+---
+
+# 🛠 Technology Stack
+
+| Layer           | Technology              |
+| --------------- | ----------------------- |
+| Frontend        | React.js                |
+| Styling         | HTML5, CSS3, JavaScript |
+| Backend         | FastAPI                 |
+| Language        | Python                  |
+| Database        | MongoDB Atlas           |
+| Authentication  | JWT, bcrypt             |
+| API             | REST API                |
+| Version Control | Git & GitHub            |
 
 ---
 
-# Key Features
+# 🔄 System Workflow
 
-* Secure user authentication using **JWT** and **bcrypt**
-* Comprehensive user profile and skill management
-* Intelligent skill-based job recommendation engine
-* Percentage-based job matching algorithm
-* Personalized job recommendations
-* Detailed job listings with company information
-* One-click job application functionality
-* Real-time application status tracking
-* Responsive and user-friendly interface
-* Cloud-based data storage using **MongoDB Atlas**
-* High-performance backend developed with **FastAPI**
-* Modern frontend built using **React.js**
+## 1. User Registration
+
+* User creates an account.
+* Password is encrypted using bcrypt.
+* User data is stored securely in MongoDB Atlas.
 
 ---
 
-# Technology Stack
+## 2. User Login
 
-| Layer             | Technologies Used                 |
-| ----------------- | --------------------------------- |
-| Frontend          | React.js, HTML5, CSS3, JavaScript |
-| Backend           | FastAPI, Python                   |
-| Database          | MongoDB Atlas                     |
-| Authentication    | JWT, bcrypt                       |
-| API Communication | REST APIs                         |
-| Version Control   | Git & GitHub                      |
+* User enters email and password.
+* Backend validates credentials.
+* JWT token is generated.
+* User is redirected to the dashboard.
 
+---
 
-## 🔄 System Flowchart
+## 3. Profile Management
 
-The following flowchart illustrates the complete user journey and data flow:
+Users can manage:
+
+* Personal details
+* Technical skills
+* Soft skills
+
+Available skill categories include:
+
+* Programming Languages
+* Frontend Development
+* Backend Development
+* Database Technologies
+* Cloud & DevOps
+* Data Science & AI
+* Mobile Development
+* Soft Skills
+
+---
+
+## 4. Skill-Based Job Matching
+
+Whenever a user opens the **Recommended Jobs** page:
+
+1. Backend fetches the user's skills.
+2. Retrieves available jobs.
+3. Compares required skills.
+4. Calculates matching percentage.
+5. Sorts jobs by highest match.
+
+Example:
+
+Required Skills
+
+* Python
+* React
+* MongoDB
+* Git
+* REST API
+
+User Skills
+
+* Python
+* React
+* MongoDB
+* Git
+
+Match Percentage
+
+```
+(4 / 5) × 100 = 80%
+```
+
+The jobs are then ranked from highest to lowest match percentage.
+
+---
+
+## 5. Job Application
+
+The user can
+
+* View job details
+* Apply for jobs
+* Save application history
+
+---
+
+## 6. Application Tracking
+
+Users can monitor:
+
+* Pending
+* Reviewed
+* Shortlisted
+* Interview Scheduled
+* Selected
+* Rejected
+
+through the dashboard.
+
+---
+
+# 🔄 System Flowchart
 
 ```mermaid
 flowchart TD
-    %% User Entry Points
-    A([User Visits Portal]) --> B{Already Registered?}
-    B -- No --> C[Sign Up / Register]
-    B -- Yes --> D[Login]
-    C --> D
-    
-    %% Dashboard & Profile
-    D --> E[User Dashboard]
-    E --> F[Profile Management]
-    
-    %% Skill Selection Phase
-    F --> G[Select/Update Technical & Soft Skills]
-    G -. Save Skills .-> API1(FastAPI: /api/profile)
-    API1 -. Update .-> DB[(MongoDB Atlas)]
-    
-    %% Matching Phase
-    E --> H[View Job Recommendations]
-    H -. Request Matches .-> API2(FastAPI: /api/jobs)
-    API2 -. Fetch User Skills & Jobs .-> DB
-    DB -. Return Data .-> API2
-    API2 -. Calculate Match % .-> H
-    
-    %% Application Phase
-    H --> J[User Reviews Job Details]
-    J --> K{Match High Enough?}
-    K -- Yes --> L[User Applies for Job]
-    K -- No --> H
-    
-    L -. Submit App .-> API3(FastAPI: /api/applications)
-    API3 -. Insert Record .-> DB
-    
-    %% Tracking
-    L --> M[Application Status Tracked in Dashboard]
+
+A([User Visits Portal])
+
+A --> B{Already Registered?}
+
+B -->|No| C[Register]
+
+B -->|Yes| D[Login]
+
+C --> D
+
+D --> E[Dashboard]
+
+E --> F[Manage Profile]
+
+F --> G[Select Skills]
+
+G --> H[FastAPI Backend]
+
+H --> I[(MongoDB Atlas)]
+
+I --> H
+
+H --> G
+
+E --> J[Recommended Jobs]
+
+J --> K[Retrieve User Skills]
+
+K --> H
+
+H --> I
+
+I --> H
+
+H --> L[Calculate Match Percentage]
+
+L --> M[Display Ranked Jobs]
+
+M --> N[View Job Details]
+
+N --> O{Apply?}
+
+O -->|Yes| P[Submit Application]
+
+P --> H
+
+H --> I
+
+I --> Q[Application History]
+
+Q --> E
+```
+
 ---
+
+# 📡 REST API Endpoints
+
+| Method | Endpoint              | Description                  |
+| ------ | --------------------- | ---------------------------- |
+| POST   | `/api/auth/register`  | Register a new user          |
+| POST   | `/api/auth/login`     | User authentication          |
+| GET    | `/api/profile`        | Get user profile             |
+| PUT    | `/api/profile/skills` | Update user skills           |
+| GET    | `/api/jobs`           | Retrieve job recommendations |
+| POST   | `/api/applications`   | Apply for a job              |
+| GET    | `/api/applications`   | View application history     |
+
+Swagger Documentation
+
+```
+http://localhost:5000/docs
+```
+
 ---
 
-## 📡 Core API Structure
+# 📂 Project Structure
 
-The backend exposes several RESTful endpoints (documented automatically via Swagger at `http://localhost:5000/docs` when running):
-
-* `POST /api/auth/register` - Creates a new user account.
-* `POST /api/auth/login` - Authenticates user and returns a JWT.
-* `GET /api/profile` - Fetches the authenticated user's profile and selected skills.
-* `PUT /api/profile/skills` - Updates the user's skill array.
-* `GET /api/jobs` - Retrieves job listings (optionally filtered and sorted by match percentage).
-* `POST /api/applications` - Submits a job application for the authenticated user.
-* `GET /api/applications` - Retrieves a user's application history.
+```
+CareerPath
+│
+├── frontend
+│   ├── src
+│   ├── public
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend
+│   ├── models
+│   ├── routes
+│   ├── database
+│   ├── utils
+│   ├── main.py
+│   └── requirements.txt
+│
+├── README.md
+└── .env
+```
 
 ---
 
-## 🚀 Setup & Local Development
+# ⚙ Installation
 
-To run this project locally on your machine:
+Clone the repository
 
-1. **Clone the repository** to your local machine.
-2. **Environment Variables**: Create a `.env` file in the root directory. You will need to define:
-   ```env
-   MONGO_URI=your_mongodb_cloud_connection_string
-   JWT_SECRET=a_secure_random_secret_string
-   PORT=5000
-   ```
-3. **Install Dependencies**: The project uses a unified package script. Run the following command in the root directory to install both frontend (Node/React) and backend (Python) dependencies:
-   ```bash
-   npm run install:all
-   ```
-4. **Start the Development Server**:
-   ```bash
-   npm run dev
-   ```
-   *Note: This command concurrently starts the FastAPI backend (usually on port 5000) and the React frontend (usually on port 5173).*
+```bash
+git clone https://github.com/your-username/CareerPath.git
+
+cd CareerPath
+```
+
+---
+
+Install Frontend Dependencies
+
+```bash
+cd frontend
+
+npm install
+```
+
+---
+
+Install Backend Dependencies
+
+```bash
+cd backend
+
+pip install -r requirements.txt
+```
+
+---
+
+Create Environment Variables
+
+Create a `.env` file.
+
+```env
+MONGO_URI=your_mongodb_connection_string
+
+JWT_SECRET=your_secret_key
+
+PORT=5000
+```
+
+---
+
+# ▶ Running the Project
+
+Start Backend
+
+```bash
+cd backend
+
+uvicorn main:app --reload --port 5000
+```
+
+Start Frontend
+
+```bash
+cd frontend
+
+npm run dev
+```
+
+Application URLs
+
+Frontend
+
+```
+http://localhost:5173
+```
+
+Backend
+
+```
+http://localhost:5000
+```
+
+Swagger API
+
+```
+http://localhost:5000/docs
+```
+
+---
+
+# 🚀 Future Enhancements
+
+* Resume upload and parsing
+* AI-powered career guidance
+* Resume-to-job matching
+* Learning recommendations
+* Skill gap analysis
+* Company dashboard
+* Email notifications
+* Interview preparation
+* Resume builder
+* Analytics dashboard
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository.
+
+2. Create a new feature branch.
+
+3. Commit your changes.
+
+4. Push the branch.
+
+5. Open a Pull Request.
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 👨‍💻 Developed By
+
+**CareerPath Development Team**
+
+Built using **React.js**, **FastAPI**, and **MongoDB Atlas** to provide an intelligent skill-based career guidance and job recommendation platform.
