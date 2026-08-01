@@ -1,128 +1,121 @@
 # CareerPath (Teamtide) - Skill-Based Job Matching & Career Guidance Portal
 
-CareerPath is an AI-powered, full-stack web application designed to connect job seekers with suitable employment opportunities based on their technical skills, soft skills, and professional interests. 
+CareerPath is an AI-powered, full-stack career platform designed to match job seekers with employment opportunities based on their technical skills, soft skills, and professional experience. 
 
-Unlike traditional job boards that rely solely on keyword searches, CareerPath analyzes the user's skill profile, extracts skills from uploaded resumes, calculates match percentages against real-world job requirements, and provides actionable career guidance to bridge skill gaps.
-
----
-
-## 🌟 Key Features
-
-1. **Smart Skill-Based Job Matching**
-   - Ranks job opportunities dynamically based on a weighted skill-match algorithm.
-   - Calculates a percentage-based match score for every job against the user's profile.
-
-2. **Automated Resume Parsing (JSON)**
-   - Upload a JSON resume to automatically extract skills using robust keyword and alias matching (e.g., matching "js" to "JavaScript", "reactjs" to "React").
-   - Extracted skills are merged directly into the user's profile.
-
-3. **Career Guidance & Skill Gap Analysis**
-   - Select a target role to view required skills vs. your current skills.
-   - Identifies exactly which skills you need to learn or improve to reach the 60% matching threshold required to apply for a role.
-   - You can only apply to a job if your match score is ≥ 60%.
-
-4. **Application Tracking**
-   - Apply to jobs with a single click (after meeting the threshold).
-   - Monitor application statuses (Pending, Under Review, Shortlisted, Selected, Rejected).
+Unlike traditional keyword-based job boards, CareerPath parses resumes, calculates a percentage-based match score for every job against the user's profile, highlights specific skill gaps, and blocks applications if the match score is below a **60% threshold** to encourage upskilling.
 
 ---
 
-## 🛠️ Technology Stack
+## 📊 System Architecture & Data Flow
 
-- **Frontend**: React.js, Vite, Vanilla CSS
-- **Backend**: Python, FastAPI
-- **Database**: MongoDB Cloud Atlas (Motor Asyncio ODM)
-- **Authentication**: JWT (JSON Web Tokens), bcrypt password hashing
+This diagram illustrates how the Vercel-hosted frontend, the Render-hosted Python backend, and the MongoDB Atlas cloud database communicate, alongside the core user workflows:
 
----
+```mermaid
+graph TD
+    %% Component Architecture
+    subgraph Component Architecture
+        ClientApp["React Frontend (Vite) <br> Hosted on Vercel"]
+        VercelProxy{"Vercel Routing Proxy <br> (client/vercel.json)"}
+        RenderServer["FastAPI Backend <br> Hosted on Render Web Service"]
+        MongoDB[("MongoDB Atlas <br> Cloud Database")]
 
-## 💼 Curated Job Roles & Skill Requirements
+        ClientApp -->|Page Navigation & Assets| ClientApp
+        ClientApp -->|API Request (/api/*)| VercelProxy
+        VercelProxy -->|Forward API Traffic| RenderServer
+        RenderServer -->|Read/Write Queries| MongoDB
+    end
 
-The system includes a highly curated database of 15 exact industry roles and their required skill sets to provide accurate matching and career guidance:
+    %% User Workflow Logical Flow
+    subgraph Logical User Flow
+        UserInit[User Login / Registration] --> Onboard[Profile Onboarding]
+        Onboard --> SkillAssess[Rate Skills / Parse Resume]
+        SkillAssess --> CalcMatch[Intelligent Matching Engine]
+        
+        CalcMatch --> MatchScoreDecision{Match Score >= 60%?}
+        MatchScoreDecision -->|Yes| ApplyAllowed[Apply with Cover Letter & Resume]
+        MatchScoreDecision -->|No| ApplyBlocked[Apply Blocked]
+        
+        ApplyBlocked --> GapAnalysis[View Career Guidance & Gaps]
+        GapAnalysis --> Roadmap[Upskill with Target Learning Roadmap]
+        Roadmap --> SkillAssess
+    end
 
-| ID | Job Role | Required Skills |
-|:---|:---|:---|
-| 1 | **Software Developer** | Java, Python, C++, OOP, Git, SQL |
-| 2 | **Full Stack Developer** | HTML, CSS, JavaScript, React, Node.js, MongoDB |
-| 3 | **Frontend Developer** | HTML, CSS, JavaScript, React, Bootstrap |
-| 4 | **Backend Developer** | Java, Spring Boot, Node.js, Django, REST APIs, SQL |
-| 5 | **Data Analyst** | Excel, SQL, Python, Power BI, Tableau, Statistics |
-| 6 | **Data Scientist** | Python, Machine Learning, Pandas, NumPy, TensorFlow, SQL |
-| 7 | **AI/ML Engineer** | Python, Deep Learning, TensorFlow, PyTorch, NLP, Computer Vision |
-| 8 | **Cybersecurity Analyst** | Network Security, Ethical Hacking, Kali Linux, SIEM, Firewalls |
-| 9 | **Cloud Engineer** | AWS, Azure, GCP, Docker, Kubernetes, Linux |
-| 10 | **DevOps Engineer** | Docker, Kubernetes, Jenkins, Git, CI/CD, Linux |
-| 11 | **Mobile App Developer** | Flutter, Kotlin, Java, Swift, Firebase |
-| 12 | **UI/UX Designer** | Figma, Adobe XD, Wireframing, Prototyping, User Research |
-| 13 | **Database Administrator (DBA)** | MySQL, PostgreSQL, Oracle, SQL Server, Database Optimization |
-| 14 | **QA/Test Engineer** | Selenium, JUnit, Manual Testing, API Testing, TestNG |
-| 15 | **Business Analyst** | SQL, Excel, Power BI, Requirements Gathering, Agile, Communication |
-
----
-
-## 🚀 Setup & Installation Instructions
-
-### 1. Prerequisites
-- Node.js (v18+)
-- Python (3.9+)
-- MongoDB Atlas Account (or local MongoDB)
-
-### 2. Backend Setup
-1. Open a terminal and navigate to the project root.
-2. Create a virtual environment (optional but recommended):
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. Install Python dependencies:
-   ```bash
-   pip install fastapi uvicorn motor pydantic passlib bcrypt python-jose python-dotenv python-multipart
-   ```
-4. Create a `.env` file in the root directory:
-   ```env
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_super_secret_key
-   PORT=5000
-   ```
-5. Run the FastAPI server:
-   ```bash
-   python app.py
-   ```
-   *The API will be available at `http://localhost:5000`*
-
-### 3. Frontend Setup
-1. Open a new terminal and navigate to the `client` folder:
-   ```bash
-   cd client
-   ```
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   *The web application will open at `http://localhost:5173`*
+    %% Styling
+    style ClientApp fill:#f4f5f7,stroke:#3b82f6,stroke-width:2px;
+    style RenderServer fill:#f4f5f7,stroke:#10b981,stroke-width:2px;
+    style MongoDB fill:#f4f5f7,stroke:#059669,stroke-width:2px;
+    style VercelProxy fill:#fffbeb,stroke:#d97706,stroke-width:2px;
+    style MatchScoreDecision fill:#fff1f2,stroke:#e11d48,stroke-width:2px;
+```
 
 ---
 
-## 📈 System Architecture & Workflow
+## 📁 Repository Directory & File Structure
 
-### 1. Profile Creation & Skill Assessment
-Users sign up and either manually assess their skills across 15+ categories or upload a JSON resume to auto-populate their profile.
+Here is a full breakdown of the files and directories in this repository:
 
-### 2. Intelligent Matching Engine
-When the user visits the Dashboard, the backend retrieves all 15 jobs and calculates a match percentage for each:
-- `Match % = (Earned Skill Weight / Total Required Skill Weight) * 100`
-- Jobs are ranked dynamically from highest to lowest match score.
-
-### 3. Gap Analysis
-If a user selects "Career Guidance", they can pick a target role (e.g., Data Scientist). The system compares their current skills to the role's required skills and highlights the exact missing technologies they need to learn to cross the 60% eligibility mark.
+*   **`app.py`**: The core Python backend written in **FastAPI**. It handles MongoDB connections, database seeding, password hashing, JWT creation, route definitions, and the core matching/resume parsing algorithms.
+*   **`vercel.json`** (Root): Handles routing and rewrites if you deploy both frontend and backend to Vercel.
+*   **`build.sh`**: Custom bash build script executed by Render to install Python dependencies (`requirements.txt`) and build the frontend React application.
+*   **`/api`**: Contains the Vercel serverless function entry points:
+    *   **`api/index.py`**: Imports the FastAPI app from the root `app.py` and serves it on Vercel.
+    *   **`api/requirements.txt`**: Specifies the dependencies required by Vercel to run the Python serverless environment.
+*   **`/client`**: The React.js frontend workspace (built with **Vite**):
+    *   **`client/src/pages/LoginPage.jsx`**: Manages sign-up, login, role selection (Job Seeker vs. Recruiter), and auth credentials.
+    *   **`client/src/pages/DashboardPage.jsx`**: Displays matching job listings, matching scores, search, and applications for job seekers.
+    *   **`client/src/pages/RecruiterDashboard.jsx`**: Provides recruiters with tools to create jobs, view applicants, review resumes, and update application statuses.
+    *   **`client/src/pages/OnboardingPage.jsx`**: Guide users through initial skill ratings and target role selection.
+    *   **`client/src/context/AuthContext.jsx`**: Provides global user authentication state (login, register, logout, session persistence) using Axios.
+    *   **`client/vercel.json`**: Configures Vercel to serve the React SPA and **proxy all `/api/*` and `/uploads/*` requests to the Render backend**.
+*   **`/server`**: An alternative Node.js Express backend implementation containing models, routes, and JSON schemas for reference.
+*   **`requirements.txt`** (Root): Python dependencies list for local development and Render deployments.
+*   **`test_resume_parser.py`**: Test script for validating the backend resume parser.
 
 ---
 
-## 🔮 Future Enhancements
-- Support for parsing PDF/DOCX resumes using Natural Language Processing.
-- Interactive learning roadmaps mapping to specific skill gaps.
-- Employer dashboard for posting new roles and tracking applicants.
+## ⚙️ Core System Algorithms
+
+### 1. Intelligent Job Matching Engine
+Each job has a list of required skills, and each skill is assigned an importance `weight` (1 to 5). When a user requests their dashboard, the backend dynamically calculates a personalized match score for every job:
+
+$$\text{Match Score} = \text{round}\left( \frac{\sum (\text{User Skill Level Factor} \times \text{Skill Weight})}{\sum \text{Total Required Skill Weights}} \times 100 \right)$$
+
+*   **Skill Level Factor**: Determined by the user's rated level (1–5) relative to the requirement:
+    *   `Level Factor = User Skill Level / 5.0`
+    *   A buffer of `+0.4` is added (up to a maximum of `1.0`) to reward even partial competencies.
+*   **Job Filtering**: Jobs are sorted in descending order of their match score. If a score is below **60%**, the frontend disables the "Apply Now" button and displays a "Match score too low" warning.
+
+### 2. Automated Resume Parsing
+Users can upload their resumes in PDF or JSON format:
+*   The parser scans the text using regex search patterns against a dictionary of predefined technologies.
+*   It supports **alias matching** (e.g. mapping "js", "reactjs", "react.js" to "React" and "JavaScript").
+*   Extracted skills are merged directly into the user's profile with a default rating of 3 (Intermediate), which users can later adjust.
+
+### 3. Career Guidance & Skill Gap Analysis
+When a user selects a target role, the backend:
+1. Compares the required skills for that role with the user's current skills.
+2. Identifies **missing skills** (skills required but not present in the user's profile).
+3. Identifies **weak skills** (skills where the user's rating is lower than the job requirements).
+4. Curates a target upskilling checklist, linking users to specific learning roadmap guidelines to bridge the gap.
+
+---
+
+## 🚀 Deployment Workflows
+
+This project is optimized for a hybrid deployment, combining the best features of Vercel and Render.
+
+### Frontend: Vercel (Hobby Tier)
+Vercel is used to compile and serve the static React frontend SPA on its global CDN edge network:
+1. **Root Directory**: Set to `client` during project import.
+2. **Framework Preset**: **Vite**.
+3. **Build Command**: `vite build`.
+4. **Output Directory**: `dist`.
+5. **Proxy Configuration**: `client/vercel.json` rewrites all `/api/*` traffic directly to the Render URL (`https://techtide-4q8b.onrender.com`).
+
+### Backend: Render (Free Web Service)
+Render hosts the persistent Python backend server, running the FastAPI app with MongoDB connectivity:
+1. **Build Command**: `bash build.sh` (installs dependencies using `requirements.txt`).
+2. **Start Command**: `uvicorn app:app --host 0.0.0.0 --port 10000` (starts the ASGI server).
+3. **Environment Variables**:
+   *   `MONGODB_URI`: Connection string to your MongoDB Atlas cluster.
+   *   `JWT_SECRET`: Secret key used for signing security tokens.
