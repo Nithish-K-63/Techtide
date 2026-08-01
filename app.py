@@ -901,11 +901,19 @@ class ResumeParser:
 
     # ── Stage 1: Low-level text block extraction ───────────────────────────────
     def _extract_blocks(self, pdf_bytes: bytes) -> Tuple[list, float, float]:
-        """Returns (blocks, page_width, avg_fontsize)"""
+        """Returns (blocks, page_width, avg_fontsize).
+
+        Handles two PDF structures:
+        - Standard:  text lives in LTTextBox elements directly on the page
+        - Embedded:  text lives in LTFigure > LTChar elements (no LTTextBox at page level)
+        Falls back to pdfminer high_level extract_text when neither path yields blocks,
+        synthesising one TextBlock per line so the section segmentation can still run.
+        """
         from pdfminer.pdfpage import PDFPage
         from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
         from pdfminer.converter import PDFPageAggregator
-        from pdfminer.layout import LAParams, LTPage, LTTextBox, LTTextLine, LTChar, LTAnon
+        from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTChar, LTFigure
+        from pdfminer.high_level import extract_text as hl_extract_text
 
         rsrcmgr = PDFResourceManager()
         laparams = LAParams(line_margin=0.3, char_margin=2.0, boxes_flow=None)
@@ -913,49 +921,64 @@ class ResumeParser:
         interp   = PDFPageInterpreter(rsrcmgr, device)
 
         blocks: list[TextBlock] = []
-        page_width = 612.0  # default A4/letter
+        page_width = 612.0
         fontsizes  = []
+
+        def _process_container(container, page_num: int):
+            """Recursively extract LTTextBox blocks from a layout container."""
+            for element in container:
+                if isinstance(element, LTTextBox):
+                    text = element.get_text().strip()
+                    if not text:
+                        continue
+                    sizes, bold, fname = [], False, ""
+                    for line in element:
+                        if not isinstance(line, LTTextLine):
+                            continue
+                        for char in line:
+                            if isinstance(char, LTChar):
+                                sizes.append(char.size)
+                                fn = char.fontname.lower()
+                                if any(w in fn for w in ["bold", "heavy", "black", "demi"]):
+                                    bold = True
+                                if not fname:
+                                    fname = char.fontname
+                    fontsize = sum(sizes) / len(sizes) if sizes else 10.0
+                    fontsizes.append(fontsize)
+                    blocks.append(TextBlock(
+                        text=text,
+                        x0=element.x0, y0=element.y0,
+                        x1=element.x1, y1=element.y1,
+                        fontsize=round(fontsize, 2),
+                        fontname=("Bold:" + fname) if bold else fname,
+                        page=page_num,
+                    ))
+                elif isinstance(element, LTFigure):
+                    # Recurse into embedded figure containers
+                    _process_container(element, page_num)
 
         for page_num, page in enumerate(PDFPage.get_pages(io.BytesIO(pdf_bytes), check_extractable=True)):
             interp.process_page(page)
             layout = device.get_result()
             if hasattr(layout, 'width'):
                 page_width = layout.width
+            _process_container(layout, page_num)
 
-            for element in layout:
-                if not isinstance(element, LTTextBox):
-                    continue
-                text = element.get_text().strip()
-                if not text:
-                    continue
-
-                # Find dominant font size in this box
-                sizes = []
-                bold  = False
-                fname = ""
-                for line in element:
-                    if not isinstance(line, LTTextLine):
-                        continue
-                    for char in line:
-                        if isinstance(char, LTChar):
-                            sizes.append(char.size)
-                            fn = char.fontname.lower()
-                            if any(w in fn for w in ["bold", "heavy", "black", "demi"]):
-                                bold = True
-                            if not fname:
-                                fname = char.fontname
-
-                fontsize = sum(sizes) / len(sizes) if sizes else 10.0
-                fontsizes.append(fontsize)
-
-                blocks.append(TextBlock(
-                    text=text,
-                    x0=element.x0, y0=element.y0,
-                    x1=element.x1, y1=element.y1,
-                    fontsize=round(fontsize, 2),
-                    fontname=("Bold:" + fname) if bold else fname,
-                    page=page_num,
-                ))
+        # ── Fallback: if low-level path found nothing, use high_level ──────────
+        if not blocks:
+            print("[Parser] No LTTextBox blocks found — falling back to high_level extract_text")
+            raw = hl_extract_text(io.BytesIO(pdf_bytes))
+            if raw.strip():
+                # Synthesise one TextBlock per non-empty line at incrementing y positions
+                lines = [ln.strip() for ln in raw.splitlines() if ln.strip()]
+                y = float(len(lines) * 14)  # simulate top-to-bottom y positions
+                for ln in lines:
+                    fontsizes.append(10.0)
+                    blocks.append(TextBlock(
+                        text=ln, x0=50.0, y0=y - 12, x1=550.0, y1=y,
+                        fontsize=10.0, fontname="", page=0,
+                    ))
+                    y -= 14.0
 
         avg_fs = sum(fontsizes) / len(fontsizes) if fontsizes else 10.0
         return blocks, page_width, avg_fs
