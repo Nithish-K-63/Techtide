@@ -71,10 +71,7 @@ const TopNav = ({ tab, setTab, user, logout }) => {
 
         {/* Right */}
         <div className="nav-right">
-          <div className="nav-bell">
-            <Ic n="bell" size={17} />
-            <span className="nav-badge">3</span>
-          </div>
+
           <div className="nav-avatar" title={user?.fullName || user?.username}>
             {(user?.fullName || user?.username || 'U')[0].toUpperCase()}
           </div>
