@@ -574,7 +574,7 @@ export default function DashboardPage() {
     return ms && mt;
   }).sort((a, b) => b.matchScore - a.matchScore);
 
-  const topJobs = [...jobs].sort((a, b) => b.matchScore - a.matchScore).slice(0, 4);
+  const topJobs = [...jobs].sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
   const avgMatch = jobs.length ? Math.round(jobs.reduce((s, j) => s + j.matchScore, 0) / jobs.length) : 0;
 
   const handleLogout = () => { logout(); navigate('/login'); };
@@ -610,9 +610,10 @@ export default function DashboardPage() {
               <p className="hero-label">AI-POWERED CAREER GUIDANCE</p>
               <h1 className="hero-h1">Discover the career <em>you<br/>were built for</em></h1>
               <p className="hero-sub">Assess your skills, match with real job roles, identify your gaps, and get a personalised learning roadmap — in minutes.</p>
-              <div className="hero-buttons">
+              <div className="hero-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 <button onClick={() => navigate('/onboarding')} className="btn-primary">Start Assessment →</button>
                 <button onClick={() => setTab('jobs')} className="btn-outline">View Job Matches</button>
+                <button onClick={() => setTab('career')} className="btn-outline" style={{ background: '#e0e7ff', color: '#4338ca', borderColor: '#c7d2fe' }}>🎯 Career Guidance & Skill Gap</button>
               </div>
             </div>
 
@@ -657,7 +658,7 @@ export default function DashboardPage() {
                 View all <Ic n="arrow" size={14} color="#4f46e5" />
               </button>
             </div>
-            <div className="top-matches-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14, marginBottom: 40 }}>
+            <div className="top-matches-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 40 }}>
               {topJobs.map((job, i) => (
                 <div key={job.id} className="card" style={{ padding: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
