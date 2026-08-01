@@ -1,9 +1,10 @@
 # CareerPath — Skill-Based Job Matching Portal
 
-CareerPath is a comprehensive, modern career guidance platform designed to bridge the gap between job seekers and employers. Instead of traditional keyword-based searching, the portal uses a **skill-centric algorithm** to recommend the most relevant job opportunities to users based on their specific technical proficiencies and soft skills.
+Project Overview
 
-This repository consists of a **React frontend** and a **FastAPI backend**, utilizing **MongoDB Cloud Atlas** for robust, schema-less data storage.
+CareerPath is an intelligent, skill-based career guidance and job matching platform designed to connect job seekers with relevant employment opportunities based on their competencies rather than traditional keyword-based searches. By leveraging a skill-centric recommendation system, the platform identifies the most suitable job openings that align with a user's technical expertise and professional capabilities, enabling more accurate and meaningful career opportunities.
 
+The application follows a modern full-stack architecture, featuring a React.js frontend for an interactive user experience, a FastAPI backend for high-performance API services, and MongoDB Atlas as the cloud-based NoSQL database for scalable and flexible data management.
 ---
 
 ## 📖 Detailed System Workflow
