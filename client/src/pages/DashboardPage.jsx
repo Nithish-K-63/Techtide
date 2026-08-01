@@ -610,10 +610,9 @@ export default function DashboardPage() {
               <p className="hero-label">AI-POWERED CAREER GUIDANCE</p>
               <h1 className="hero-h1">Discover the career <em>you<br/>were built for</em></h1>
               <p className="hero-sub">Assess your skills, match with real job roles, identify your gaps, and get a personalised learning roadmap — in minutes.</p>
-              <div className="hero-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              <div className="hero-buttons">
                 <button onClick={() => navigate('/onboarding')} className="btn-primary">Start Assessment →</button>
                 <button onClick={() => setTab('jobs')} className="btn-outline">View Job Matches</button>
-                <button onClick={() => setTab('career')} className="btn-outline" style={{ background: '#e0e7ff', color: '#4338ca', borderColor: '#c7d2fe' }}>🎯 Career Guidance & Skill Gap</button>
               </div>
             </div>
 
