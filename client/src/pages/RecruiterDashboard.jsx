@@ -49,6 +49,7 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   const [savedNote, setSavedNote] = useState(false);
   const [status, setStatus] = useState(app.status);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [resumeExists, setResumeExists] = useState(null); // null=checking, true=ok, false=missing
   const noteTimer = useRef(null);
 
   useEffect(() => {
@@ -60,6 +61,8 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   useEffect(() => {
     setNoteText(app.counselingNote || '');
     setStatus(app.status);
+    setProfile(null);
+    setResumeExists(null);
   }, [app.id]);
 
   const saveStatus = async (newStatus, note) => {
@@ -93,6 +96,15 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
   const resumeUrl = profile?.profile?.resumeFileName
     ? `/api/resume/${profile.profile.resumeFileName}`
     : null;
+
+  // HEAD-check: verify the file actually exists on the server
+  useEffect(() => {
+    if (!resumeUrl) return;
+    setResumeExists(null); // reset to "checking"
+    fetch(resumeUrl, { method: 'HEAD' })
+      .then(r => setResumeExists(r.ok))
+      .catch(() => setResumeExists(false));
+  }, [resumeUrl]);
 
   const sc = STATUS_CFG[status] || STATUS_CFG.applied;
 
@@ -249,7 +261,29 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
               {/* Resume */}
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Resume</p>
-                {resumeUrl ? (
+
+                {/* Case 1: No resume on profile at all */}
+                {!resumeUrl && (
+                  <div className="card" style={{ padding: '14px 16px', background: '#f8fafc', border: '1px dashed var(--border)' }}>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Ic n="resume" size={16} color="var(--text-muted)" />
+                      No resume uploaded by this candidate.
+                    </p>
+                  </div>
+                )}
+
+                {/* Case 2: Checking if file exists (HEAD request in progress) */}
+                {resumeUrl && resumeExists === null && (
+                  <div className="card" style={{ padding: '14px 16px', background: '#f8fafc', border: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ width: 14, height: 14, border: '2px solid #6366f1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                      Checking resume availability…
+                    </p>
+                  </div>
+                )}
+
+                {/* Case 3: File confirmed available */}
+                {resumeUrl && resumeExists === true && (
                   <div className="card" style={{ padding: '14px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{ width: 40, height: 40, borderRadius: 10, background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -284,15 +318,27 @@ const ApplicantPanel = ({ app, onClose, onStatusChange }) => {
                       </a>
                     </div>
                   </div>
-                ) : (
-                  <div className="card" style={{ padding: '14px 16px', background: '#f8fafc', border: '1px dashed var(--border)' }}>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Ic n="resume" size={16} color="var(--text-muted)" />
-                      No resume uploaded by this candidate.
-                    </p>
+                )}
+
+                {/* Case 4: File not found on server */}
+                {resumeUrl && resumeExists === false && (
+                  <div className="card" style={{ padding: '14px 16px', background: '#fffbeb', border: '1px solid #fde68a' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#92400e', marginBottom: 3 }}>
+                          {profile.profile.resumeOriginalName || 'Resume file not available'}
+                        </p>
+                        <p style={{ fontSize: 12, color: '#b45309', lineHeight: 1.5 }}>
+                          This candidate uploaded a resume, but the file is no longer available on the server.
+                          Ask the candidate to re-upload their resume.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
+
             </>
           )}
 
