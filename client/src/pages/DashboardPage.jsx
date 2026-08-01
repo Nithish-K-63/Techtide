@@ -45,6 +45,7 @@ const TopNav = ({ tab, setTab, user, logout }) => {
   const navItems = [
     { id: 'home',    label: 'Home',        icon: 'home' },
     { id: 'jobs',    label: 'Job Matches', icon: 'jobs' },
+    { id: 'career',  label: 'Career Guidance', icon: 'trend' },
     { id: 'skills',  label: 'Skill Gaps',  icon: 'skills' },
     { id: 'applied', label: 'Applications',icon: 'apps' },
     { id: 'profile', label: 'Counselor',   icon: 'counsel' },
@@ -302,11 +303,17 @@ const JobCard = ({ job, saved, onSave, onApply, applied, selected, onSelect, del
       </div>
 
       <div style={{ display: 'flex', gap: 8, paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
-        <button onClick={e => { e.stopPropagation(); onApply(job); }}
-          className={applied ? 'btn-ghost' : 'btn-navy'}
-          style={{ flex: 1, justifyContent: 'center', padding: '8px', fontSize: 12 }}>
-          {applied ? <><Ic n="check" size={12} color="#15803d" /> Applied</> : 'Apply Now →'}
-        </button>
+        {job.matchScore >= 60 ? (
+          <button onClick={e => { e.stopPropagation(); onApply(job); }}
+            className={applied ? 'btn-ghost' : 'btn-navy'}
+            style={{ flex: 1, justifyContent: 'center', padding: '8px', fontSize: 12 }}>
+            {applied ? <><Ic n="check" size={12} color="#15803d" /> Applied</> : 'Apply Now →'}
+          </button>
+        ) : (
+          <div style={{ flex: 1, textAlign: 'center', padding: '8px', fontSize: 12, color: '#94a3b8', background: '#f8fafc', borderRadius: 8 }}>
+            Requires 60% match to apply
+          </div>
+        )}
       </div>
     </div>
   );
@@ -364,10 +371,16 @@ const JobDetail = ({ job, applied, onApply, saved, onSave }) => {
       </div>
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => onApply(job)} className={applied ? 'btn-ghost' : 'btn-navy'}
-          style={{ flex: 2, justifyContent: 'center', padding: '12px' }}>
-          {applied ? <><Ic n="check" size={14} color="#15803d" /> Application Submitted</> : <><Ic n="send" size={14} /> Apply Now</>}
-        </button>
+        {job.matchScore >= 60 ? (
+          <button onClick={() => onApply(job)} className={applied ? 'btn-ghost' : 'btn-navy'}
+            style={{ flex: 2, justifyContent: 'center', padding: '12px' }}>
+            {applied ? <><Ic n="check" size={14} color="#15803d" /> Application Submitted</> : <><Ic n="send" size={14} /> Apply Now</>}
+          </button>
+        ) : (
+          <div style={{ flex: 2, textAlign: 'center', padding: '12px', color: '#94a3b8', background: '#f8fafc', borderRadius: 8, fontWeight: 500 }}>
+            You need at least a 60% match score to apply for this position.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -534,6 +547,7 @@ export default function DashboardPage() {
   const [applications, setApplications] = useState([]);
   const [toast, setToast] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedTargetRole, setSelectedTargetRole] = useState(user?.profile?.targetRole || '');
 
   const userSkills = user?.profile?.skills || [];
   const appliedIds = new Set(applications.map(a => a.jobId));
@@ -756,6 +770,142 @@ export default function DashboardPage() {
                   onApply={handleApply} saved={selectedJob ? saved.has(selectedJob.id) : false} onSave={toggleSave} />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ══ CAREER GUIDANCE ══ */}
+        {tab === 'career' && (
+          <div style={{ maxWidth: 850, margin: '0 auto' }}>
+            <div style={{ marginBottom: 24 }}>
+              <h1 className="page-title" style={{ fontStyle: 'italic' }}>career guidance & skill gap.</h1>
+              <p className="page-subtitle">Select your target role to identify skill gaps and reach the 60% match threshold required to apply.</p>
+            </div>
+
+            {/* Target Role Selector Card */}
+            <div className="card" style={{ padding: 24, marginBottom: 24 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, minWidth: 250 }}>
+                  <label style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', display: 'block', marginBottom: 6 }}>
+                    🎯 Choose Target Role
+                  </label>
+                  <select 
+                    value={selectedTargetRole || (jobs[0]?.title || '')} 
+                    onChange={e => setSelectedTargetRole(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff', fontWeight: 600 }}
+                  >
+                    {Array.from(new Set(jobs.map(j => j.title))).map(title => (
+                      <option key={title} value={title}>{title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Suggested Alternative Roles */}
+                <div style={{ flex: 1, minWidth: 280 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                    💡 Suggested Roles
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {topJobs.slice(0, 4).map(j => (
+                      <button key={j.id} onClick={() => setSelectedTargetRole(j.title)}
+                        style={{ padding: '5px 10px', borderRadius: 20, fontSize: 12, border: '1px solid #e2e8f0', background: (selectedTargetRole || jobs[0]?.title) === j.title ? '#4f46e5' : '#f8fafc', color: (selectedTargetRole || jobs[0]?.title) === j.title ? '#fff' : '#334155', cursor: 'pointer', fontWeight: 600 }}>
+                        {j.title} ({j.matchScore}%)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Role Guidance Details */}
+            {(() => {
+              const currentRoleTitle = selectedTargetRole || jobs[0]?.title;
+              const targetJob = jobs.find(j => j.title === currentRoleTitle) || jobs[0];
+              if (!targetJob) return <p>No role selected.</p>;
+
+              const userSkillMap = new Map(userSkills.map(s => [s.id, s.level]));
+              const required = targetJob.requiredSkills || [];
+
+              const possessedSkills = required.filter(r => userSkillMap.has(r.id));
+              const missingSkills = required.filter(r => !userSkillMap.has(r.id));
+              const isEligibleToApply = targetJob.matchScore >= 60;
+
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }}>
+                  {/* Status Banner */}
+                  <div className="card" style={{ padding: 24, background: isEligibleToApply ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)' : 'linear-gradient(135deg, #fff1f2, #ffe4e6)', borderColor: isEligibleToApply ? '#bbf7d0' : '#fecdd3' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <span style={{ fontSize: 20 }}>{isEligibleToApply ? '🎉' : '🔒'}</span>
+                          <h3 style={{ fontSize: 18, fontWeight: 700, color: isEligibleToApply ? '#166534' : '#991b1b' }}>
+                            {isEligibleToApply ? 'Eligible to Apply!' : 'Application Locked (< 60% Match)'}
+                          </h3>
+                        </div>
+                        <p style={{ fontSize: 13, color: isEligibleToApply ? '#15803d' : '#9f1239' }}>
+                          Your fit score for <strong>{targetJob.title}</strong> is <strong>{targetJob.matchScore}%</strong>.
+                          {isEligibleToApply ? ' You exceed the minimum 60% requirement!' : ' Acquire the missing skills below to reach the 60% threshold.'}
+                        </p>
+                      </div>
+
+                      {isEligibleToApply ? (
+                        <button onClick={() => { setTab('jobs'); setSearch(targetJob.title); }} className="btn-navy" style={{ padding: '10px 18px' }}>
+                          View Jobs & Apply →
+                        </button>
+                      ) : (
+                        <button onClick={() => navigate('/onboarding')} className="btn-outline" style={{ padding: '10px 18px', background: '#fff' }}>
+                          Update Profile Skills ✏️
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Skill Breakdown Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 20 }}>
+                    {/* Possessed Skills */}
+                    <div className="card" style={{ padding: 20 }}>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, color: '#15803d', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                        <Ic n="check" size={18} color="#15803d" /> Matched Skills ({possessedSkills.length}/{required.length})
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {possessedSkills.map(r => {
+                          const skillObj = cats.flatMap(c => c.skills).find(s => s.id === r.id);
+                          const lvl = userSkillMap.get(r.id);
+                          return (
+                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #dcfce7' }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: '#166534' }}>{skillObj?.name || r.id}</span>
+                              <span className="tag tag-green" style={{ fontSize: 11 }}>Level {lvl}/5</span>
+                            </div>
+                          );
+                        })}
+                        {!possessedSkills.length && <p style={{ fontSize: 13, color: '#94a3b8' }}>No matching skills found for this role yet.</p>}
+                      </div>
+                    </div>
+
+                    {/* Missing Skills / Gaps */}
+                    <div className="card" style={{ padding: 20 }}>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                        <Ic n="gaps" size={18} color="#b91c1c" /> Skill Gaps to Learn ({missingSkills.length})
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {missingSkills.map(r => {
+                          const skillObj = cats.flatMap(c => c.skills).find(s => s.id === r.id);
+                          return (
+                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#fff1f2', borderRadius: 8, border: '1px solid #ffe4e6' }}>
+                              <div>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: '#991b1b', display: 'block' }}>{skillObj?.name || r.id}</span>
+                                <span style={{ fontSize: 11, color: '#94a3b8' }}>Weight: {r.weight}% of match score</span>
+                              </div>
+                              <span className="tag tag-amber" style={{ fontSize: 11 }}>Recommended</span>
+                            </div>
+                          );
+                        })}
+                        {!missingSkills.length && <p style={{ fontSize: 13, color: '#15803d', fontWeight: 600 }}>Great job! You have all required skills for this role.</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
