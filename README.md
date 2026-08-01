@@ -201,25 +201,7 @@ flowchart TD
     
     %% Tracking
     L --> M[Application Status Tracked in Dashboard]
-```
-
 ---
-
-## 🏗️ Architecture & Tech Stack
-
-### Frontend (Client)
-* **React.js**: For building a dynamic, Single Page Application (SPA).
-* **Vite**: Used as the frontend build tool for incredibly fast Hot Module Replacement (HMR).
-* **Styling**: Built with modern CSS (and likely Tailwind CSS or a UI library) for a responsive, premium aesthetic.
-
-### Backend (Server)
-* **FastAPI (Python)**: A modern, fast (high-performance) web framework for building APIs. Chosen for its automatic Swagger documentation, data validation with Pydantic, and async support.
-* **Motor**: The asynchronous Python driver for MongoDB, allowing non-blocking database queries.
-* **Passlib & Python-Jose**: For robust password hashing (`bcrypt`) and JWT generation/validation.
-
-### Database
-* **MongoDB Cloud Atlas**: A NoSQL document database. Ideal for this project due to the flexible nature of job listings, user profiles, and array-based skill tags.
-
 ---
 
 ## 📡 Core API Structure
