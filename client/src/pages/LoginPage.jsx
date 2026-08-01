@@ -122,7 +122,7 @@ export default function LoginPage() {
             {error && (
               <div style={{ background: '#fff0f3', border: '1px solid #fecdd3', borderRadius: 8,
                 padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#be123c', display: 'flex', alignItems: 'center', gap: 8 }}>
-                ⚠️ {error}
+                ⚠️ {typeof error === 'object' ? (error.message || JSON.stringify(error)) : error}
               </div>
             )}
 
