@@ -1088,8 +1088,9 @@ export default function DashboardPage() {
                   { l: 'Skills Count', v: `${userSkills.length} skills` },
                   { l: 'Applications', v: `${applications.length} submitted` },
                   { l: 'Saved Jobs', v: `${saved.size} saved` },
+                  { l: 'Last Updated', v: user?.profile?.lastUpdated ? new Date(user.profile.lastUpdated).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—' },
                 ].map(({ l, v }) => (
-                  <div key={l} style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                  <div key={l} style={{ padding: '10px 14px', borderRadius: 8, background: '#f8fafc', border: '1px solid #f1f5f9', gridColumn: l === 'Last Updated' ? '1 / -1' : 'auto' }}>
                     <p style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{l}</p>
                     <p style={{ fontSize: 14, fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v}</p>
                   </div>

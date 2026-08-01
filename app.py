@@ -436,6 +436,7 @@ class UserProfile(BaseModel):
     experience: str = ""
     education: str = ""
     bio: Optional[str] = ""
+    lastUpdated: Optional[str] = None
 
 class RegisterBody(BaseModel):
     username: str
@@ -546,6 +547,7 @@ async def register(body: RegisterBody):
             "targetRole": "",
             "experience": "",
             "education": "",
+            "lastUpdated": None,
         },
     }
 
@@ -715,9 +717,11 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
 @app.put("/api/profile/skills")
 async def update_skills(body: SkillsUpdateBody, current_user: dict = Depends(get_current_user)):
     d = get_db()
+    now_str = datetime.now(timezone.utc).isoformat()
     update_data = {
         "profile.skills": body.skills or [],
         "profile.profileComplete": len(body.skills or []) > 0,
+        "profile.lastUpdated": now_str,
     }
     if body.targetRole:
         update_data["profile.targetRole"] = body.targetRole
@@ -742,6 +746,7 @@ async def update_skills(body: SkillsUpdateBody, current_user: dict = Depends(get
             if body.experience: MEM_USERS[idx]["profile"]["experience"] = body.experience
             if body.education: MEM_USERS[idx]["profile"]["education"] = body.education
             MEM_USERS[idx]["profile"]["profileComplete"] = len(MEM_USERS[idx]["profile"]["skills"]) > 0
+            MEM_USERS[idx]["profile"]["lastUpdated"] = now_str
             user = MEM_USERS[idx]
 
     if not user:
@@ -1352,10 +1357,12 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
 
     # ── Merge extracted skills into user profile ──────────────────────────────
     d = get_db()
+    now_str = datetime.now(timezone.utc).isoformat()
     resume_data = {
         "profile.resumeFileName": filename,
         "profile.resumeOriginalName": resume.filename,
-        "profile.resumeUploadedAt": datetime.now(timezone.utc).isoformat(),
+        "profile.resumeUploadedAt": now_str,
+        "profile.lastUpdated": now_str,
     }
 
     if extracted_skills:
@@ -1372,12 +1379,21 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
         idx = next((i for i, u in enumerate(MEM_USERS) if u["id"] == current_user["id"]), None)
         if idx is not None:
             MEM_USERS[idx].setdefault("profile", {})["skills"] = merged_skills
+            MEM_USERS[idx]["profile"]["lastUpdated"] = now_str
 
     if d is not None:
         try:
             await d.users.update_one({"id": current_user["id"]}, {"$set": resume_data})
         except Exception:
             pass
+    else:
+        # Sync into in-memory fallback store for the resume filename details
+        idx = next((i for i, u in enumerate(MEM_USERS) if u["id"] == current_user["id"]), None)
+        if idx is not None:
+            MEM_USERS[idx].setdefault("profile", {})["resumeFileName"] = filename
+            MEM_USERS[idx]["profile"]["resumeOriginalName"] = resume.filename
+            MEM_USERS[idx]["profile"]["resumeUploadedAt"] = now_str
+            MEM_USERS[idx]["profile"]["lastUpdated"] = now_str
 
     return {
         "message": "Resume uploaded and skills extracted successfully" if extracted_skills else "Resume uploaded successfully",
@@ -1391,7 +1407,10 @@ async def upload_resume(resume: UploadFile = File(...), current_user: dict = Dep
 @app.put("/api/profile/info")
 async def update_profile_info(body: ProfileInfoBody, current_user: dict = Depends(get_current_user)):
     d = get_db()
-    update_fields = {}
+    now_str = datetime.now(timezone.utc).isoformat()
+    update_fields = {
+        "profile.lastUpdated": now_str
+    }
     if body.fullName: update_fields["fullName"] = body.fullName
     if body.email: update_fields["email"] = body.email
     if body.targetRole: update_fields["profile.targetRole"] = body.targetRole
@@ -1412,6 +1431,11 @@ async def update_profile_info(body: ProfileInfoBody, current_user: dict = Depend
         if idx is not None:
             if body.fullName: MEM_USERS[idx]["fullName"] = body.fullName
             if body.email: MEM_USERS[idx]["email"] = body.email
+            if body.targetRole: MEM_USERS[idx]["profile"]["targetRole"] = body.targetRole
+            if body.experience: MEM_USERS[idx]["profile"]["experience"] = body.experience
+            if body.education: MEM_USERS[idx]["profile"]["education"] = body.education
+            if body.bio is not None: MEM_USERS[idx]["profile"]["bio"] = body.bio
+            MEM_USERS[idx]["profile"]["lastUpdated"] = now_str
             user = MEM_USERS[idx]
 
     if not user:
